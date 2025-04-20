@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Artify",
+    "slug": "Artify",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/iconArtify.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/iconArtify.png",
+      "resizeMode": "contain",
+      "backgroundColor": "black"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/iconArtify.png",
+        "backgroundColor": "black"
+      }
+    },
+    "web": {
+      "favicon": "./assets/iconArtify.png"
+    }
+  }
+}
