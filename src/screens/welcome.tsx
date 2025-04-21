@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import tw from "twrnc";
+import { Axios } from "../scripts/axios";
 
 type RootStackParamList = {
   Welcome: undefined;
@@ -13,7 +14,12 @@ type RootStackParamList = {
 
 export const WelcomeScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-
+  useEffect(() => {
+    Axios.get("/docs")
+      .then(res => console.log("Sucesso:", res.data))
+      .catch(err => console.log("Erro:", err.message));
+  }, []);
+  
   return (
     <View style={tw`flex-1 bg-slate-900 items-center justify-center`}>
       {/* Imagem do Logo */}

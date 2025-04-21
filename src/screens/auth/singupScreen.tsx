@@ -20,15 +20,23 @@ export const SignupScreen = () => {
     //Faz o post do usuário após o fim da requisição
     const postCase = async()=>{
       alert("Cadastrando")
-      await Axios.post("/auth",requestBody)
+      await Axios.post("http://192.168.0.7:5636/user",requestBody)
       .then((res)=>{
         console.log(res)
         if(res.status==201){
           alert("Usuário Cadastrado 🎊")
+        }else if(res.status==401){
+          alert("Este Email já está em uso")
         }
       }).catch(err=>{ 
         console.error(err); // melhor para debugar
-        alert("Erro desconhecido");
+        if(err.request){
+          alert(err.request);
+        }
+        if(err.response){
+          alert(err.response.data)
+        }
+        alert("deu erro")
       })
     }
 
