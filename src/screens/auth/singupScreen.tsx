@@ -10,11 +10,12 @@ import { Axios } from "../../scripts/axios";
 
 
 
+
 export const SignupScreen = () => {
     const [requestBody,setRequestBody] = useState<EmailPostInterface>({
       Email:"",Password:"",userName:""
     })
-  
+
     const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
     
     //Faz o post do usuário após o fim da requisição
@@ -25,6 +26,7 @@ export const SignupScreen = () => {
         console.log(res)
         if(res.status==201){
           alert("Usuário Cadastrado 🎊")
+          navigation.navigate("Login")
         }else if(res.status==401){
           alert("Este Email já está em uso")
         }
