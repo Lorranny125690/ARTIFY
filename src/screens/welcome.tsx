@@ -4,20 +4,39 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import tw from "twrnc";
 import { Axios } from "../scripts/axios";
+import { AuthUser } from "../scripts/authHandler/authenticatedUser";
+import { RootStackParamList } from "../types/rootStackParamList";
 
-type RootStackParamList = {
-  Welcome: undefined;
-  Login: undefined;
-  Signup: undefined;
-  Home: undefined;
-};
+
 
 export const WelcomeScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const authManager = new AuthUser()
+  //Redirecionar para o Home se já estiver logado
+  const checkUserToken = async () => {
+    const token = await authManager.GetUserToken();
+      if (token.id!=null) {
+        console.log(token.id)
+        await Axios.get("/user",{
+          headers:{'Authorization': `Bearer ${token.id}`}
+        })
+        .then(async res=>{
+            if(res.status==200){
+                await authManager.storeUserInfo(res.data.name)
+            }else{
+                throw new Error("Usuário não encontrado; o Token fornecido está errado")
+            }
+        })
+        .catch(err=>{
+            console.error(err)
+            throw new Error("Erro desconhecido")
+        })
+        navigation.replace("Home"); 
+      }
+  };
+  //Checa se o usuárioja 
   useEffect(() => {
-    Axios.get("/docs")
-      .then(res => console.log("Sucesso:", res.data))
-      .catch(err => console.log("Erro:", err.message));
+    checkUserToken(); 
   }, []);
   
   return (
