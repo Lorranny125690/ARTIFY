@@ -21,7 +21,7 @@ export const SignupScreen = () => {
     //Faz o post do usuário após o fim da requisição
     const postCase = async()=>{
       alert("Cadastrando")
-      await Axios.post("http://192.168.0.7:5636/user",requestBody)
+      await Axios.post("/user",requestBody)
       .then((res)=>{
         console.log(res)
         if(res.status==201){
