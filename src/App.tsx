@@ -2,8 +2,10 @@ import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet, StatusBar } from "react-native";
-import { UserProvider } from "../my-app/screens/user";
-import { RootNavigator } from "../my-app/navigation/AppNavigation"
+import { RootNavigator } from "./navigation/AppNavigation";
+import { UserProvider } from "./screens/user";
+
+
 
 export function App() {
   return (
