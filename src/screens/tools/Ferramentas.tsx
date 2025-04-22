@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -15,7 +15,12 @@ import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import tw from "twrnc";
 import { StackNavigationProp } from "@react-navigation/stack";
-import type { RootStackParamList } from "../navigation/types";
+import { RootStackParamList } from "../../types/rootStackParamList";
+import { openCamera } from "./functions/OpenCamera";
+import { openGallery } from "./functions/OpenGallery";
+import { RecentProcessedImages } from "./functions/recentProcess";
+import { Images } from "../../types/entitys/images";
+
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -24,11 +29,7 @@ type Item = {
   icon: string;
 };
 
-const recentEdits = [
-  require("../assets/splash-icon.png"),
-  require("../assets/splash-icon.png"),
-  require("../assets/splash-icon.png"),
-];
+
 
 const toolSections: { title: string; data: Item[] }[] = [
   {
@@ -78,7 +79,8 @@ const toolSections: { title: string; data: Item[] }[] = [
   },
 ];
 
-const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => {
+//Esse é o componente de cada ferramenta
+export const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => {
   const [selectedTool, setSelectedTool] = useState<Item | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [imageUri, setImageUri] = useState<string | null>(null);
@@ -89,45 +91,18 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
     setModalVisible(true);
   };
 
-  const openCamera = async () => {
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permission.granted) {
-      Alert.alert("Permissão negada", "Precisamos de acesso à câmera.");
-      return;
-    }
+  const cameraHandle = async ()=>{
+    const ls = await openCamera()
+    setModalVisible(false)
+    navigation.navigate("Photo", { imageUri: ls });
+  }
+  const galleryHandle = async ()=>{
+    const ls = await openGallery()
+    setModalVisible(false)
+    navigation.navigate("Photo", { imageUri: ls });
+  }
 
-    const result = await ImagePicker.launchCameraAsync({
-      quality: 1,
-      allowsEditing: true,
-    });
 
-    if (!result.canceled) {
-      const selectedUri = result.assets[0].uri;
-      navigation.navigate("Photo", { imageUri: selectedUri });
-    }
-
-    setModalVisible(false);
-  };
-
-  const openGallery = async () => {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      Alert.alert("Permissão negada", "Precisamos de acesso à galeria.");
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 1,
-      allowsEditing: true,
-    });
-
-    if (!result.canceled) {
-      const selectedUri = result.assets[0].uri;
-      navigation.navigate("Photo", { imageUri: selectedUri });      
-    }
-    setModalVisible(false);
-  };
 
   return (
     <View style={tw`mt-6 px-2 items-center`}>
@@ -162,14 +137,14 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
             </Text>
 
             <TouchableOpacity
-              onPress={openCamera}
+              onPress={cameraHandle}
               style={tw`bg-blue-500 px-4 py-3 rounded-lg mb-2`}
             >
               <Text style={tw`text-white text-center font-semibold`}>Abrir Câmera</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={openGallery}
+              onPress={galleryHandle}
               style={tw`bg-green-500 px-4 py-3 rounded-lg mb-2`}
             >
               <Text style={tw`text-white text-center font-semibold`}>Escolher da Galeria</Text>
@@ -196,14 +171,26 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
   );
 };
 
+
 export const Ferramentas: React.FC = () => {
   const navigation = useNavigation<DrawerNavigationProp<any>>();
+
+  const [recentEdits,setRecentEdits] = useState<Images[]>([])
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      const loadRecentImages = await RecentProcessedImages();
+      setRecentEdits(loadRecentImages);
+    };
+  
+    fetchImages();
+  }, []);
 
   return (
     <ScrollView style={tw`flex-1 bg-slate-900`} contentContainerStyle={tw`pb-10`}>
       <View style={tw`bg-slate-800 flex-row justify-between items-center py-3 px-4`}>
         <View style={tw`flex-row items-center`}>
-          <Image source={require("../assets/iconArtify.png")} style={tw`w-10 h-10 mr-2`} />
+          <Image source={require("../../assets/iconArtify.png")} style={tw`w-10 h-10 mr-2`} />
           <Text style={tw`text-white text-lg font-bold`}>Artify</Text>
         </View>
         <TouchableOpacity onPress={() => navigation.openDrawer()}>
@@ -211,22 +198,40 @@ export const Ferramentas: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      <View style={tw`px-4 mt-6`}>
-        <Text style={tw`text-white text-lg font-semibold mb-2`}>Usadas recentemente</Text>
-        <FlatList
-          horizontal
-          data={recentEdits}
-          keyExtractor={(_, index) => index.toString()}
-          renderItem={({ item }) => (
-            <View style={tw`bg-slate-700 m-2 p-4 rounded-lg w-29 mx-2 items-center shadow-lg`}>
-              <Image source={item} style={tw`w-16 h-16`} />
-              <Text style={tw`text-white text-xs mt-2 text-center`}>Grayscale</Text>
-            </View>
+      {/*Edições recentes*/ }
+      
+        <View style={tw`px-4 mt-6`}>
+          <Text style={tw`text-white text-lg font-semibold mb-2`}>Usadas recentemente</Text>
+          {
+            recentEdits.length > 0 ? (
+              <FlatList
+                horizontal
+                data={recentEdits}
+                keyExtractor={(_, index) => index.toString()}
+                renderItem={({ item }) => (
+                  <View style={tw`bg-slate-700 m-2 p-4 rounded-lg w-29 mx-2 items-center shadow-lg`}>
+                    <Image 
+                      source={
+                        item.stored_filepath 
+                          ? { uri: item.stored_filepath } 
+                          : require("../../assets/icon.png")
+                      }
+                      style={tw`w-16 h-16`} 
+                    />
+                    <Text style={tw`text-white text-xs mt-2 text-center`}>Grayscale</Text>
+                  </View>
+                )}
+                contentContainerStyle={tw`items-center`}
+                showsHorizontalScrollIndicator={false}
+              />
+            ) : (
+              <Text style={tw`text-gray-400 text-center mt-4`}>
+                Nenhuma edição recente encontrada.
+              </Text>
           )}
-          contentContainerStyle={tw`items-center`}
-          showsHorizontalScrollIndicator={false}
-        />
       </View>
+      
+
 
       {toolSections.map((section) => (
         <Section key={section.title} title={section.title} data={section.data} />
