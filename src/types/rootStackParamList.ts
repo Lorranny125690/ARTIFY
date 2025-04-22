@@ -5,5 +5,6 @@ export type RootStackParamList = {
   Recuperação: undefined
   Home: undefined;
   Email: undefined;
+  Auth: undefined,
   Photo: { imageUri: string };
 };

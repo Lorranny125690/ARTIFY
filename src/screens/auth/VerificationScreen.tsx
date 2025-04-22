@@ -79,7 +79,7 @@ export const VerificationScreen = () => {
           {/* Imagem de topo */}
           <Image
             source={require("../../assets/iconArtify.png")}
-            style={tw`w-100 h-90`}
+            style={tw`w-80 h-80`} 
             resizeMode="contain"
           />
   

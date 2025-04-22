@@ -4,40 +4,19 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import tw from "twrnc";
 import { DrawerContentComponentProps, DrawerNavigationProp } from "@react-navigation/drawer";
 import { useUser } from "../screens/user";
-import { CameraIcon } from "lucide-react-native";
-import { AuthUser } from "../scripts/authHandler/authenticatedUser";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "../types/rootStackParamList";
 
 export const Sidebar = (props: DrawerContentComponentProps) => {
-  const { user } = useUser();
   const { navigation } = props;
-  const userAuthenticator = new AuthUser()
-  const logOut = async () => {
-    console.log("loggin")
-    const authenticator = new AuthUser();
-    await authenticator.DeleteUserToken();
-    const navigator = useNavigation<DrawerNavigationProp<RootStackParamList>>();
-    navigator.navigate("Login");
-  };
-  const [userName,setUserName] = React.useState<string>()
+  const navigator = useNavigation<DrawerNavigationProp<RootStackParamList>>();
 
-  React.useEffect(()=>{
-    const sla = async()=>{
-      const {userName:_userName} = await userAuthenticator.GetUserToken()
-      if(_userName){
-        setUserName(_userName)
-      }
-    }
-    sla()
-  },[])
   return (
     <View style={tw`flex-1 bg-slate-900 p-4`}>
       {/* Perfil */}
       <View style={tw`flex-row items-center py-4 border-b border-gray-700`}>
         <Icon name="user-circle" size={40} color="white" />
         <Text style={tw`text-white text-lg font-bold ml-3`}>
-          {userName ? userName : "Cadastrar-se"}
         </Text>
       </View>
 
@@ -79,7 +58,7 @@ export const Sidebar = (props: DrawerContentComponentProps) => {
         </TouchableOpacity>
 
         <TouchableOpacity style={tw`flex-row items-center py-3`}
-                          onPress={async()=>await logOut()}>
+          onPress={() => navigation.navigate("welcome")}>
           <Icon name="sign-out" size={20} color="#3B82F6" />
           <Text style={tw`text-white text-base ml-3`}>Logout</Text>
         </TouchableOpacity>

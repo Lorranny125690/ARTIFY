@@ -18,7 +18,7 @@ export const EmailScreen = () => {
       
       <Image
         source={require("../../assets/iconArtify.png")}
-        style={tw`w-110 h-110`} 
+        style={tw`w-80 h-80`} 
         resizeMode="contain"
       />   
 

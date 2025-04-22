@@ -1,4 +1,4 @@
-import { AuthUser } from "../../../scripts/authHandler/authenticatedUser";
+import { AuthUser } from "../../../scripts/AuthContext/authenticatedUser";
 import { Axios } from "../../../scripts/axios";
 import { Images } from "../../../types/entitys/images";
 

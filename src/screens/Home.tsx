@@ -10,20 +10,6 @@ type Item = {
   icon: string;
 };
 
-type RootStackParamList = {
-  Welcome: undefined;
-  Login: undefined;
-  Signup: undefined;
-  Home: undefined;
-  Auth: undefined;
-  SaveImages: undefined;
-  Gallery: undefined;
-  Ferramentas: undefined;
-  Recuperação: undefined;
-  Email: undefined;
-  Camera: undefined;
-};
-
 const recentEdits = [
   require("../assets/splash-icon.png"),
   require("../assets/splash-icon.png"),
@@ -108,7 +94,7 @@ export const HomeScreen: React.FC = () => {
       <View style={tw`bg-slate-800 p-4 rounded-lg mt-6 mx-4`}>
         <Image source={require("../assets/nerd.jpg")} style={tw`w-full h-50 rounded-lg`} />
         <Text style={tw`text-white text-sm mt-2 text-center`}>
-          Um Texto muito legal que Alex vai achar muito foda e que eu to testando aqui aumentando pra preencher espaço
+          Venha e aproveite o mundo dos filtros e cores! Tudo fica melhor com um retoque 🫣
         </Text>
       </View>
 
