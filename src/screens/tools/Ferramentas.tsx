@@ -12,7 +12,6 @@ import {
 import Icon from "react-native-vector-icons/FontAwesome";
 import { DrawerNavigationProp } from "@react-navigation/drawer";
 import { useNavigation } from "@react-navigation/native";
-import * as ImagePicker from "expo-image-picker";
 import tw from "twrnc";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../../types/rootStackParamList";
@@ -21,15 +20,12 @@ import { openGallery } from "./functions/OpenGallery";
 import { RecentProcessedImages } from "./functions/recentProcess";
 import { Images } from "../../types/entitys/images";
 
-
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 type Item = {
   name: string;
   icon: string;
 };
-
-
 
 const toolSections: { title: string; data: Item[] }[] = [
   {
@@ -101,7 +97,6 @@ export const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data
     setModalVisible(false)
     navigation.navigate("Photo", { imageUri: ls });
   }
-
 
 
   return (
@@ -230,8 +225,6 @@ export const Ferramentas: React.FC = () => {
               </Text>
           )}
       </View>
-      
-
 
       {toolSections.map((section) => (
         <Section key={section.title} title={section.title} data={section.data} />
