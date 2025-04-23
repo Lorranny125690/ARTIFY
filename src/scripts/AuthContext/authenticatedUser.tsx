@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store'
 import { createContext, useContext, useEffect, useState } from 'react';
+import { Axios } from '../axios';
 
 //Refazendo do jeito certo ?? https://youtu.be/9vydY9SDtAo?si=iagd3PB4HwvdFfq5
 
@@ -13,7 +14,7 @@ interface AuthProps {
 }
 
 const TOKEN_KEY = "my-jwt"
-export const API_URL = 'http://127.0.0.1:5636' 
+export const API_URL = 'https://image-smith.onrender.com' 
 const AuthContext = createContext<AuthProps>({})
 
 export const useAuth = () => {
@@ -48,7 +49,7 @@ export const AuthProvider = ({children}: any) => {
 
     const register = async (Email: string, Password: string, userName: string) => {
         try {
-          const result = await axios.post(`${API_URL}/user`, { Email, Password, userName });
+          const result = await Axios.post(`${API_URL}/user`, { Email, Password, userName });
       
           const token = result.data.token;
           if (token) {
@@ -65,7 +66,7 @@ export const AuthProvider = ({children}: any) => {
 
     const login = async (Email: string, Password: string) => {
         try {
-          const result = await axios.post(`${API_URL}/user/login`, { Email, Password });
+          const result = await Axios.post(`/user/login`, { Email, Password });
       
           console.log("file: AuthContext.tsx:41 ~login ~result:", result)
       

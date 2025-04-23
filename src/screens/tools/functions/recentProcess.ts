@@ -1,6 +1,6 @@
 import { AuthUser } from "../../../scripts/AuthContext/authenticatedUser";
 import { Axios } from "../../../scripts/axios";
-import { Images } from "../../../types/entitys/images";
+import { Images } from "../../../scripts/AuthContext/entitys/images";
 
 
 export async function RecentProcessedImages():Promise<Images[]> {
