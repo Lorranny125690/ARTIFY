@@ -5,8 +5,6 @@ import React, { useRef, useState } from 'react';
 import { ArrowLeft } from "lucide-react-native";
 import tw from "twrnc";
 import { RootStackParamList } from "../../types/rootStackParamList";
-import { EmailPostInterface } from "../../types/interfaces/UserPostInterface";
-import { Axios } from "../../scripts/axios";
 import { useAuth } from "../../scripts/AuthContext/authenticatedUser";
 
 export const SignupScreen = () => {
