@@ -4,7 +4,7 @@
     "slug": "Artify",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/iconArtify.png",
+    "icon": "./src/assets/iconArtify.png",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
@@ -17,12 +17,12 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/iconArtify.png",
+        "foregroundImage": "./src/assets/iconArtify.png",
         "backgroundColor": "black"
       }
     },
     "web": {
-      "favicon": "./assets/iconArtify.png"
+      "favicon": "./src/assets/iconArtify.png"
     }
   }
 }
