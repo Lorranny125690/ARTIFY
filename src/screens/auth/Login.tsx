@@ -5,8 +5,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft } from "lucide-react-native";
 import tw from "twrnc";
 import { RootStackParamList } from "../../types/rootStackParamList";
-import { userLoginBody } from "../../types/interfaces/UserLoginInterface";
-import { Axios } from "../../scripts/axios";
 import { API_URL, useAuth } from "../../scripts/AuthContext/authenticatedUser";
 import axios from "axios";
 
@@ -18,7 +16,7 @@ export const LoginScreen = () => {
 
   useEffect(() => {
     const testCall = async () => {
-      const result = await axios.get(`${API_URL}/user/login`)
+      const result = await axios.post(`${API_URL}/user/login`)
       console.log("File: Login text:16 ~testcall ~result: ", result)
     }
 

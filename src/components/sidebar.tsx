@@ -3,13 +3,17 @@ import { View, Text, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import tw from "twrnc";
 import { DrawerContentComponentProps, DrawerNavigationProp } from "@react-navigation/drawer";
-import { useUser } from "../screens/user";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "../types/rootStackParamList";
+import { useEffect } from "react";
+import axios from "axios";
+import { API_URL, useAuth } from "../scripts/AuthContext/authenticatedUser";
+import * as SecureStore from 'expo-secure-store'
 
 export const Sidebar = (props: DrawerContentComponentProps) => {
   const { navigation } = props;
   const navigator = useNavigation<DrawerNavigationProp<RootStackParamList>>();
+  const { authState, onLogout } = useAuth();
 
   return (
     <View style={tw`flex-1 bg-slate-900 p-4`}>
@@ -58,7 +62,7 @@ export const Sidebar = (props: DrawerContentComponentProps) => {
         </TouchableOpacity>
 
         <TouchableOpacity style={tw`flex-row items-center py-3`}
-          onPress={() => navigation.navigate("welcome")}>
+          onPress={onLogout}>
           <Icon name="sign-out" size={20} color="#3B82F6" />
           <Text style={tw`text-white text-base ml-3`}>Logout</Text>
         </TouchableOpacity>
