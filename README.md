@@ -8,7 +8,7 @@
 <p>Clone o repositório:</p>
 
 <pre>
-<code>git clone https://github.com/seu-usuario/seu-projeto.git
+<code>git clone https://github.com/Lorranny125690/ARTIFY.git
 cd seu-projeto
 </code>
 </pre>
