@@ -1,7 +1,7 @@
 <h1>Vá no branch "test"</h1>
 
-<p>Uma breve descrição do seu projeto.</p>
-<p><strong>Exemplo:</strong> Este é um projeto <em>Node.js / React / etc.</em> que faz <em>função principal ou objetivo</em>.</p>
+<p>Editor/conversor de fotos</p>
+<p><strong>Exemplo:</strong> Este é um projeto <em>Node.js / React / etc.</p>
 
 <h2>Instalação</h2>
 
