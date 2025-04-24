@@ -5,7 +5,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { WelcomeScreen } from "../screens/welcome";
 import { AuthStack } from "./Rotas/AuthStack";
 import { HomeDrawer } from "./Rotas/HomeDrawer";
-import { ImagePreviewScreen } from "../screens/camera";
+import { ImagePreviewScreen } from "../screens/tools/functions/Preview";
 import type { RootStackParamList } from "../types/rootStackParamList";
 import { useAuth } from "../scripts/AuthContext/authenticatedUser";
 

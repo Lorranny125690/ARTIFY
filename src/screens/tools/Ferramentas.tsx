@@ -18,7 +18,7 @@ import { RootStackParamList } from "../../types/rootStackParamList";
 import { openCamera } from "./functions/OpenCamera";
 import { openGallery } from "./functions/OpenGallery";
 import { RecentProcessedImages } from "./functions/recentProcess";
-import { Images } from "../../scripts/AuthContext/entitys/images";
+import { Images } from "../../types/entitys/images";
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
