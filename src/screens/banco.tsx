@@ -79,9 +79,9 @@ export function ImageGallery() {
   return (
     <View style={tw`flex-1 bg-slate-900`}>
       {/* Header */}
-      <View style={tw`bg-slate-800 flex-row justify-between items-center py-2 px-4`}>
+      <View style={tw`mb-2 bg-slate-800 flex-row justify-between items-center py-2 px-4`}>
         <View style={tw`flex-row items-center`}>
-          <Image source={require("../assets/iconArtify.png")} style={tw`w-15 h-15 mr-2`} />
+          <Image source={require("../assets/iconArtify.png")} style={tw`w-20 h-9`} />
         </View>
         <TouchableOpacity onPress={() => navigation.openDrawer()}>
           <Icon name="bars" size={24} color="#fff" />
