@@ -24,11 +24,13 @@ export const LoginScreen = () => {
   }, [])
 
   const login = async () => {
-    const result =  await onLogin!(email, password);
-    if (result && result.error) {
-      alert(result.msg);
-    }
-  }
+    const result = await onLogin!(email, password);
+
+    if (!email || !password) {
+      alert("Preencha todos os campos!");
+      return;
+    }    
+  };  
 
   return (
     <ScrollView contentContainerStyle={tw`flex-1 bg-slate-900 items-center justify-center`}> 

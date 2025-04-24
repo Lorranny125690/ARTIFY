@@ -35,7 +35,6 @@ export const AuthProvider = ({children}: any) => {
             const token = await SecureStore.getItemAsync(TOKEN_KEY)
             console.log("file: AuthContext.tsx:32 ~loadToken ~token:", token);
             if (token) {
-
                 axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
                 setAuthState({
@@ -49,12 +48,13 @@ export const AuthProvider = ({children}: any) => {
 
     const register = async (Email: string, Password: string, userName: string) => {
         try {
-          const result = await Axios.post(`${API_URL}/user`, { Email, Password, userName });
+          const result = await Axios.post(`/user`, { Email, Password, userName });
       
           const token = result.data.token;
           if (token) {
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             await SecureStore.setItemAsync(TOKEN_KEY, token);
+            await SecureStore.setItemAsync('userName', userName);
             setAuthState({ token, authenticated: true });
           }
       
@@ -67,6 +67,10 @@ export const AuthProvider = ({children}: any) => {
     const login = async (Email: string, Password: string) => {
         try {
           const result = await Axios.post(`/user/login`, { Email, Password });
+          const userName = await result.data.userName;
+
+          console.log("Login result:", result.data);
+          console.log("Username: ", result.data.userName)
       
           console.log("file: AuthContext.tsx:41 ~login ~result:", result)
       
@@ -78,6 +82,7 @@ export const AuthProvider = ({children}: any) => {
           axios.defaults.headers.common['Authorization'] = `Bearer ${result.data.token}`;
       
           await SecureStore.setItemAsync(TOKEN_KEY, result.data.token);
+          await SecureStore.setItemAsync('userName', userName);
       
           return result;
         } catch (e) {

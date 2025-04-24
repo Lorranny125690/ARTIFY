@@ -27,13 +27,7 @@ export const SignupScreen = () => {
       alert("As senhas não coincidem");
       return;
     }
-  
     const result = await onRegister!(Email, Password, userName);
-  
-    if (result && result.error) {
-      alert(result.msg);
-      return;
-    }
   
     await login(); 
   };   
