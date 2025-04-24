@@ -1,0 +1,28 @@
+<h1>Vá no branch "test"</h1>
+
+<p>Uma breve descrição do seu projeto.</p>
+<p><strong>Exemplo:</strong> Este é um projeto <em>Node.js / React / etc.</em> que faz <em>função principal ou objetivo</em>.</p>
+
+<h2>Instalação</h2>
+
+<p>Clone o repositório:</p>
+
+<pre>
+<code>git clone https://github.com/seu-usuario/seu-projeto.git
+cd seu-projeto
+</code>
+</pre>
+
+<p>Instale as dependências:</p>
+
+<pre>
+<code>npm i
+</code>
+</pre>
+
+<p><strong>Caso ocorra algum erro, você pode forçar a instalação com:</strong></p>
+
+<pre>
+<code>npm i --force
+</code>
+</pre>
