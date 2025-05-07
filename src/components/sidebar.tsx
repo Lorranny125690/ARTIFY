@@ -1,49 +1,40 @@
 import * as React from "react";
-import { View, Text, TouchableOpacity, FlatList, ListRenderItem } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import tw from "twrnc";
 import { DrawerContentComponentProps } from "@react-navigation/drawer";
-import { API_URL, useAuth } from "../scripts/AuthContext/authenticatedUser";
+import { useAuth } from "../scripts/AuthContext/authenticatedUser";
 import { useEffect, useState } from "react";
 import Axios from "../scripts/axios";
-import axios from "axios";
-
-// Tipo esperado dos dados
-type UserData = {
-  User: string;
-};
 
 export const Sidebar = (props: DrawerContentComponentProps) => {
   const { navigation } = props;
-  const { authState, onLogout } = useAuth();
-  const [userName, setUserName] = useState<UserData[] | null>(null);
-
-  const fetchData = async (limit = 10) => {
-    const response = await fetch(`https://image-smith.onrender.com`);
-    const data = await response.json();
-    setUserName(data);
-  };
-
+  const { onLogout, UserName } = useAuth();
+  
+  const [userName, setUserName] = useState<string>("");
+  
   useEffect(() => {
-    fetchData();
-  }, []);
+    const fetchUser = async () => {
+      // Checando se UserName não é undefined
+      if (UserName) {
+        const name = await UserName();
+        if (name) setUserName(name);
+      } else {
+        console.error("UserName function is not defined.");
+      }
+    };
+  
+    fetchUser();
+  }, [UserName]);  
 
   return (
     <View style={tw`flex-1 bg-slate-900 p-4`}>
       {/* Perfil */}
       <View style={tw`flex-row items-center py-4 border-b border-gray-700`}>
         <Icon name="user-circle" size={40} color="white" />
-        <FlatList
-          data={userName || []}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) => (
-            <View>
-              <Text style={tw`text-white text-lg font-bold ml-3`}>
-                {item.User}
-              </Text>
-            </View>
-          )}
-        />
+        <Text style={tw`text-white text-lg font-bold ml-3`}>
+          {userName || "Carregando..."}
+        </Text>
       </View>
 
       {/* Opções de navegação */}
