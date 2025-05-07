@@ -17,7 +17,7 @@ export const SignupScreen = () => {
 
   const login = async () => {
     const result =  await onLogin!(Email, Password);
-    if (result && result.error) {
+    if (result.e) {
       alert(result.msg);
     }
   }

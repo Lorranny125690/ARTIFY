@@ -8,7 +8,7 @@
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/iconArtify.png",
+      "image": "./src/assets/iconArtify.png",
       "resizeMode": "contain",
       "backgroundColor": "black"
     },
