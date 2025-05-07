@@ -97,7 +97,7 @@ export const VerificationScreen = () => {
             {code.map((digit, index) => (
               <TextInput
                 key={index}
-                ref={(ref) => (inputsRef.current[index] = ref)}
+                ref={(ref) => {inputsRef.current[index] = ref}}
                 style={tw`bg-slate-800 text-white text-2xl w-14 h-14 text-center rounded`}
                 keyboardType="numeric"
                 maxLength={1}

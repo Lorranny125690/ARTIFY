@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store'
 import { createContext, useContext, useEffect, useState } from 'react';
-import { Axios } from '../axios';
+import Axios from '../axios';
 
 //Refazendo do jeito certo ?? https://youtu.be/9vydY9SDtAo?si=iagd3PB4HwvdFfq5
 
@@ -51,12 +51,14 @@ export const AuthProvider = ({children}: any) => {
           const result = await Axios.post(`/user`, { Email, Password, userName });
       
           const token = result.data.token;
+          const username = result.data.User;
+          alert(username)
           if (token) {
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             await SecureStore.setItemAsync(TOKEN_KEY, token);
-            await SecureStore.setItemAsync('userName', userName);
-            console.log(token)
-            console.log(userName)
+            await SecureStore.setItemAsync('userName', username);
+            console.log("Token:" + token)
+            console.log("username:" + username)
             setAuthState({ token, authenticated: true });
           }
       

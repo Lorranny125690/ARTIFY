@@ -26,10 +26,14 @@ export const LoginScreen = () => {
   const login = async () => {
     const result = await onLogin!(email, password);
 
+    if (result.e) {
+      alert(result.msg);
+    }
+
     if (!email || !password) {
       alert("Preencha todos os campos!");
       return;
-    }    
+    }
   };  
 
   return (

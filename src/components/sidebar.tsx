@@ -3,27 +3,33 @@ import { View, Text, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import tw from "twrnc";
 import { DrawerContentComponentProps } from "@react-navigation/drawer";
-import { useNavigation } from "@react-navigation/native";
-import { RootStackParamList } from "../types/rootStackParamList";
-import { StackNavigationProp } from "@react-navigation/stack";
-import * as SecureStore from 'expo-secure-store';
 import { useAuth } from "../scripts/AuthContext/authenticatedUser";
+import { useEffect, useState } from "react";
+import Axios from "../scripts/axios";
 
 export const Sidebar = (props: DrawerContentComponentProps) => {
-  const navigation2 = useNavigation<StackNavigationProp<RootStackParamList>>();
   const { navigation } = props;
   const { authState, onLogout } = useAuth();
-  const [userName, setUserName] = React.useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
 
-  React.useEffect(() => {
-    const fetchUserName = async () => {
-      const storedUserName = await SecureStore.getItemAsync('userName');
-      console.log("Nome recuperado:", storedUserName);
-      setUserName(storedUserName);
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await Axios.get('/user');
+        if (response.data.User) {
+          setUserName(response.data.User);
+          Authorization: `Bearer ${authState?.token}`
+        } else {
+          setUserName("Usuário");
+        }
+      } catch (error) {
+        console.error("Erro ao buscar usuário:", error);
+        setUserName("Erro ao carregar");
+      }
     };
-  
-    fetchUserName();
-  }, []);  
+
+    fetchUser();
+  }, []);
 
   return (
     <View style={tw`flex-1 bg-slate-900 p-4`}>
