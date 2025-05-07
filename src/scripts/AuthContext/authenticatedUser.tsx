@@ -71,7 +71,7 @@ export const AuthProvider = ({children}: any) => {
     const login = async (Email: string, Password: string) => {
         try {
           const result = await Axios.post(`/user/login`, { Email, Password });
-          const userName = await result.data.userName;
+          const userName = await result.data.User;
 
           console.log("Login result:", result.data);
           console.log("Username: ", result.data.userName)
