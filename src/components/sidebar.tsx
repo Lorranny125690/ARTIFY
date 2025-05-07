@@ -7,10 +7,6 @@ import { useAuth } from "../scripts/AuthContext/authenticatedUser";
 import { useEffect, useState } from "react";
 import Axios from "../scripts/axios";
 
-type UserData = {
-  User: string;
-};
-
 export const Sidebar = (props: DrawerContentComponentProps) => {
   const { navigation } = props;
   const { authState, onLogout } = useAuth();
@@ -20,7 +16,7 @@ export const Sidebar = (props: DrawerContentComponentProps) => {
   const myUser = async () => {
     try {
       const result = await Axios.get(`/user`);
-      const username = result.data?.User;
+      const username = result.data.User;
 
       if (username && username !== userName) {
         setUserName(username);
@@ -33,7 +29,7 @@ export const Sidebar = (props: DrawerContentComponentProps) => {
   };
 
   useEffect(() => {
-    if (authState?.authenticated && !userName) {
+    if (authState?.authenticated) {
       myUser();
     }
   }, [authState, userName]);
