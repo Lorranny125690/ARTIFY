@@ -1,5 +1,5 @@
 import * as React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, FlatList, ListRenderItem } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import tw from "twrnc";
 import { DrawerContentComponentProps } from "@react-navigation/drawer";
@@ -8,30 +8,42 @@ import { useEffect, useState } from "react";
 import Axios from "../scripts/axios";
 import axios from "axios";
 
+// Tipo esperado dos dados
+type UserData = {
+  User: string;
+};
+
 export const Sidebar = (props: DrawerContentComponentProps) => {
   const { navigation } = props;
   const { authState, onLogout } = useAuth();
-  const [userName, setUserName] = useState<string | null>(null);
+  const [userName, setUserName] = useState<UserData[] | null>(null);
+
+  const fetchData = async (limit = 10) => {
+    const response = await fetch(`https://image-smith.onrender.com`);
+    const data = await response.json();
+    setUserName(data);
+  };
 
   useEffect(() => {
-    const testCall = async () => {
-      const result = await axios.get(`${API_URL}/user`)
-      setUserName(result.data.User)
-      console.log("File: Login text:16 ~testcall ~result: ", result)
-    }
-
-    alert(userName)
-    testCall();
-  }, [])
+    fetchData();
+  }, []);
 
   return (
     <View style={tw`flex-1 bg-slate-900 p-4`}>
       {/* Perfil */}
       <View style={tw`flex-row items-center py-4 border-b border-gray-700`}>
         <Icon name="user-circle" size={40} color="white" />
-        <Text style={tw`text-white text-lg font-bold ml-3`}>
-          {userName || 'Carregando...'}
-        </Text>
+        <FlatList
+          data={userName || []}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item }) => (
+            <View>
+              <Text style={tw`text-white text-lg font-bold ml-3`}>
+                {item.User}
+              </Text>
+            </View>
+          )}
+        />
       </View>
 
       {/* Opções de navegação */}
@@ -71,7 +83,10 @@ export const Sidebar = (props: DrawerContentComponentProps) => {
           <Text style={tw`text-white text-base ml-3`}>Compartilhar</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={tw`flex-row items-center py-3`} onPress={onLogout}>
+        <TouchableOpacity
+          style={tw`flex-row items-center py-3`}
+          onPress={onLogout}
+        >
           <Icon name="sign-out" size={20} color="#3B82F6" />
           <Text style={tw`text-white text-base ml-3`}>Logout</Text>
         </TouchableOpacity>
