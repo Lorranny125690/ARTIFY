@@ -79,7 +79,7 @@ export const VerificationScreen = () => {
           {/* Imagem de topo */}
           <Image
             source={require("../../assets/iconArtify.png")}
-            style={tw`w-100 h-90`}
+            style={tw`w-80 h-80`} 
             resizeMode="contain"
           />
   
@@ -97,7 +97,7 @@ export const VerificationScreen = () => {
             {code.map((digit, index) => (
               <TextInput
                 key={index}
-                ref={(ref) => (inputsRef.current[index] = ref)}
+                ref={(ref) => {inputsRef.current[index] = ref}}
                 style={tw`bg-slate-800 text-white text-2xl w-14 h-14 text-center rounded`}
                 keyboardType="numeric"
                 maxLength={1}

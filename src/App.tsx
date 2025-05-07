@@ -4,19 +4,18 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet, StatusBar } from "react-native";
 import { RootNavigator } from "./navigation/AppNavigation";
 import { UserProvider } from "./screens/user";
-
-
+import { AuthProvider } from "./scripts/AuthContext/authenticatedUser";
 
 export function App() {
   return (
-    <UserProvider>
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor="#1e293b" />
-        <NavigationContainer>
+    <AuthProvider>
+      <NavigationContainer>
+        <SafeAreaView style={styles.container}>
+          <StatusBar barStyle="light-content" backgroundColor="#1e293b" />
           <RootNavigator />
-        </NavigationContainer>
-      </SafeAreaView>
-    </UserProvider>
+        </SafeAreaView>
+      </NavigationContainer>
+    </AuthProvider>
   );
 }
 

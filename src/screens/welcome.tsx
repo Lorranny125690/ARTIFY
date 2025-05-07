@@ -4,40 +4,10 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import tw from "twrnc";
 import { Axios } from "../scripts/axios";
-import { AuthUser } from "../scripts/authHandler/authenticatedUser";
 import { RootStackParamList } from "../types/rootStackParamList";
-
-
 
 export const WelcomeScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const authManager = new AuthUser()
-  //Redirecionar para o Home se já estiver logado
-  const checkUserToken = async () => {
-    const token = await authManager.GetUserToken();
-      if (token.id!=null) {
-        console.log(token.id)
-        await Axios.get("/user",{
-          headers:{'Authorization': `Bearer ${token.id}`}
-        })
-        .then(async res=>{
-            if(res.status==200){
-                await authManager.storeUserInfo(res.data.name)
-            }else{
-                throw new Error("Usuário não encontrado; o Token fornecido está errado")
-            }
-        })
-        .catch(err=>{
-            console.error(err)
-            throw new Error("Erro desconhecido")
-        })
-        navigation.replace("Home"); 
-      }
-  };
-  //Checa se o usuárioja 
-  useEffect(() => {
-    checkUserToken(); 
-  }, []);
   
   return (
     <View style={tw`flex-1 bg-slate-900 items-center justify-center`}>
@@ -45,7 +15,7 @@ export const WelcomeScreen = () => {
       <View style={tw`mb-20`}>
         <Image 
           source={require("../assets/iconArtify.png")} 
-          style={tw`w-100 h-100`} 
+          style={tw`w-80 h-80`} 
           resizeMode="contain"
         />
       </View>
@@ -68,7 +38,7 @@ export const WelcomeScreen = () => {
 
       {/* Link "Entrar sem uma conta" */}
       <TouchableOpacity onPress={() => navigation.navigate("Home")}>
-        <Text style={tw`text-gray-400 mt-6 underline`}>Entrar sem uma conta</Text>
+        <Text onPress={() => alert("Apenas para o desenvolvimento. Ainda sendo trabalhada.")} style={tw`text-gray-400 mt-6 underline`}>Entrar sem uma conta</Text>
       </TouchableOpacity>
     </View>
   );

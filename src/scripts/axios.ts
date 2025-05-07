@@ -1,6 +1,8 @@
 import axios from "axios";
 
-export const Axios = axios.create({
-    baseURL:"http://127.0.0.1:5636",
+const Axios = axios.create({
+    baseURL: "https://image-smith.onrender.com",
     timeout:5000
 })
+
+export default Axios;

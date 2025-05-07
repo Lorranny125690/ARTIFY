@@ -12,7 +12,6 @@ import {
 import Icon from "react-native-vector-icons/FontAwesome";
 import { DrawerNavigationProp } from "@react-navigation/drawer";
 import { useNavigation } from "@react-navigation/native";
-import * as ImagePicker from "expo-image-picker";
 import tw from "twrnc";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../../types/rootStackParamList";
@@ -21,15 +20,12 @@ import { openGallery } from "./functions/OpenGallery";
 import { RecentProcessedImages } from "./functions/recentProcess";
 import { Images } from "../../types/entitys/images";
 
-
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 type Item = {
   name: string;
   icon: string;
 };
-
-
 
 const toolSections: { title: string; data: Item[] }[] = [
   {
@@ -101,8 +97,6 @@ export const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data
     setModalVisible(false)
     navigation.navigate("Photo", { imageUri: ls });
   }
-
-
 
   return (
     <View style={tw`mt-6 px-2 items-center`}>
@@ -190,8 +184,7 @@ export const Ferramentas: React.FC = () => {
     <ScrollView style={tw`flex-1 bg-slate-900`} contentContainerStyle={tw`pb-10`}>
       <View style={tw`bg-slate-800 flex-row justify-between items-center py-3 px-4`}>
         <View style={tw`flex-row items-center`}>
-          <Image source={require("../../assets/iconArtify.png")} style={tw`w-10 h-10 mr-2`} />
-          <Text style={tw`text-white text-lg font-bold`}>Artify</Text>
+          <Image source={require("../../assets/iconArtify.png")} style={tw`w-20 h-9`} />
         </View>
         <TouchableOpacity onPress={() => navigation.openDrawer()}>
           <Icon name="bars" size={24} color="#fff" />
@@ -230,17 +223,18 @@ export const Ferramentas: React.FC = () => {
               </Text>
           )}
       </View>
-      
-
 
       {toolSections.map((section) => (
         <Section key={section.title} title={section.title} data={section.data} />
       ))}
 
-      <View style={tw`mt-8 py-4 border-t border-gray-700 px-4 items-center`}>
-        <Text style={tw`text-white text-lg font-semibold mb-2`}>Redes sociais</Text>
-        <View style={tw`flex-row justify-around w-full max-w-xs`}>
-          {["facebook", "instagram", "twitter", "globe"].map((icon) => (
+      <View style={tw`mt-8 py-4 gap-10 bg-slate-800 items-center justify-center top-10`}>
+        <View style={tw`flex-row top-2 items-center`}>
+          <Text style={tw`text-white mr-30 text-xl font-semibold mb-2`}>Redes sociais</Text>
+          <Image source={require("../../assets/iconArtify.png")} style={tw`w-20 h-9`}/>
+        </View>
+        <View style={tw`gap-10 flex-row justify-around w-full max-w-xs`}>
+          {["facebook", "github", "envelope", "instagram", "twitter"].map((icon) => (
             <Icon key={icon} name={icon} size={20} color="#fff" />
           ))}
         </View>
