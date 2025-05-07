@@ -7,25 +7,36 @@ import { useAuth } from "../scripts/AuthContext/authenticatedUser";
 import { useEffect, useState } from "react";
 import Axios from "../scripts/axios";
 
+type UserData = {
+  User: string;
+};
+
 export const Sidebar = (props: DrawerContentComponentProps) => {
   const { navigation } = props;
-  const { onLogout, UserName } = useAuth();
-  
-  const [userName, setUserName] = useState<string>("");
-  
-  useEffect(() => {
-    const fetchUser = async () => {
-      // Checando se UserName não é undefined
-      if (UserName) {
-        const name = await UserName();
-        if (name) setUserName(name);
-      } else {
-        console.error("UserName function is not defined.");
+  const { authState, onLogout } = useAuth();
+  const [userName, setUserName] = useState<string | undefined>();
+  const [loading, setLoading] = useState<boolean>(true);
+
+  const myUser = async () => {
+    try {
+      const result = await Axios.get(`/user`);
+      const username = result.data?.User;
+
+      if (username && username !== userName) {
+        setUserName(username);
       }
-    };
-  
-    fetchUser();
-  }, [UserName]);  
+    } catch (e: any) {
+      console.warn("Erro ao buscar usuário:", e?.response?.data?.msg || e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (authState?.authenticated && !userName) {
+      myUser();
+    }
+  }, [authState, userName]);
 
   return (
     <View style={tw`flex-1 bg-slate-900 p-4`}>
@@ -33,7 +44,7 @@ export const Sidebar = (props: DrawerContentComponentProps) => {
       <View style={tw`flex-row items-center py-4 border-b border-gray-700`}>
         <Icon name="user-circle" size={40} color="white" />
         <Text style={tw`text-white text-lg font-bold ml-3`}>
-          {userName || "Carregando..."}
+          {loading ? "Carregando..." : userName ?? "Usuário"}
         </Text>
       </View>
 

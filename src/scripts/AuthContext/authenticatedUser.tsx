@@ -10,7 +10,6 @@ interface AuthProps {
   onRegister?: (Email: string, Password: string, userName: string) => Promise<any>;
   onLogin?: (Email: string, Password: string) => Promise<any>;
   onLogout?: () => Promise<any>;
-  UserName?: () => Promise<string | null>;
 }
 
 const TOKEN_KEY = "my-jwt";
@@ -113,7 +112,6 @@ export const AuthProvider = ({ children }: any) => {
     onRegister: register,
     onLogin: login,
     onLogout: logout,
-    UserName: UserName,
     authState,
   };
 
