@@ -3,9 +3,10 @@ import { View, Text, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import tw from "twrnc";
 import { DrawerContentComponentProps } from "@react-navigation/drawer";
-import { useAuth } from "../scripts/AuthContext/authenticatedUser";
+import { API_URL, useAuth } from "../scripts/AuthContext/authenticatedUser";
 import { useEffect, useState } from "react";
 import Axios from "../scripts/axios";
+import axios from "axios";
 
 export const Sidebar = (props: DrawerContentComponentProps) => {
   const { navigation } = props;
@@ -13,23 +14,15 @@ export const Sidebar = (props: DrawerContentComponentProps) => {
   const [userName, setUserName] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await Axios.get('/user');
-        if (response.data.User) {
-          setUserName(response.data.User);
-          Authorization: `Bearer ${authState?.token}`
-        } else {
-          setUserName("Usuário");
-        }
-      } catch (error) {
-        console.error("Erro ao buscar usuário:", error);
-        setUserName("Erro ao carregar");
-      }
-    };
+    const testCall = async () => {
+      const result = await axios.get(`${API_URL}/user`)
+      setUserName(result.data.User)
+      console.log("File: Login text:16 ~testcall ~result: ", result)
+    }
 
-    fetchUser();
-  }, []);
+    alert(userName)
+    testCall();
+  }, [])
 
   return (
     <View style={tw`flex-1 bg-slate-900 p-4`}>
