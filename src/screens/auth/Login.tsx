@@ -14,7 +14,7 @@ import { ArrowLeft } from "lucide-react-native";
 import tw from "twrnc";
 import { RootStackParamList } from "../../types/rootStackParamList";
 import { API_URL, useAuth } from "../../contexts/AuthContext/authenticatedUser";
-import { loginService } from "./Login";
+import { loginService } from "./Services/Login";
 
 export const LoginScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();

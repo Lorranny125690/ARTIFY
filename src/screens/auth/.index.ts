@@ -1,4 +1,4 @@
-export * from "./EmailScreen"
+export * from "./Email"
 export * from "./Login"
-export * from "./VerificationScreen"
+export * from "./Verification"
 export * from "./Register"
