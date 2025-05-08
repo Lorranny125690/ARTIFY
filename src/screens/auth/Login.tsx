@@ -13,8 +13,8 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { ArrowLeft } from "lucide-react-native";
 import tw from "twrnc";
 import { RootStackParamList } from "../../types/rootStackParamList";
-import { API_URL, useAuth } from "../../contexts/AuthContext/authenticatedUser";
-import { loginService } from "./Services/Login";
+import { useAuth } from "../../contexts/AuthContext/authenticatedUser";
+import Login from "./Services/Login";
 
 export const LoginScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
@@ -23,7 +23,7 @@ export const LoginScreen = () => {
   const { onLogin, onRegister } = useAuth();
 
   useEffect(() => {
-    loginService(); 
+    Login(); 
   }, []);
 
   const login = async () => {
