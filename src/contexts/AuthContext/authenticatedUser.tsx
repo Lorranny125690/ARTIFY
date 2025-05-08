@@ -51,7 +51,6 @@ export const AuthProvider = ({children}: any) => {
       
           const token = result.data.token;
           const username = result.data.User;
-          //alert(username)
           if (token) {
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             await SecureStore.setItemAsync("my-jwt", token);
@@ -79,11 +78,9 @@ export const AuthProvider = ({children}: any) => {
                 authenticated: true,
             });
       
-            //axios.defaults.headers.common['Authorization'] = `Bearer ${userId}`;
             console.warn("pre warning")
             await SecureStore.setItemAsync("my-jwt", userId);
-            //   await SecureStore.setItemAsync('userName', userName);
-            console.log("Stored info to SecureStorage"+userId)
+            console.log("Stored info to SecureStorage" + userId)
             return result;
         } catch (e) {
           return { error: true, msg: (e as any).response?.data?.msg || "Erro ao fazer login" };

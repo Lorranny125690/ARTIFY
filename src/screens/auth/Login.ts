@@ -1,6 +1,6 @@
 // src/services/loginService.ts
 import axios from "axios";
-import { API_URL } from "../../scripts/AuthContext/authenticatedUser";
+import { API_URL } from "../../contexts/AuthContext/authenticatedUser";
 
 export const loginService = async () => {
   try {
