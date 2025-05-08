@@ -13,7 +13,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { ArrowLeft } from "lucide-react-native";
 import tw from "twrnc";
 import { RootStackParamList } from "../../types/rootStackParamList";
-import { API_URL, useAuth } from "../../scripts/AuthContext/authenticatedUser";
+import { API_URL, useAuth } from "../../contexts/AuthContext/authenticatedUser";
 import { loginService } from "./Login";
 
 export const LoginScreen = () => {
@@ -23,7 +23,7 @@ export const LoginScreen = () => {
   const { onLogin, onRegister } = useAuth();
 
   useEffect(() => {
-    loginService(); // ⬅️ chamada separada
+    loginService(); 
   }, []);
 
   const login = async () => {

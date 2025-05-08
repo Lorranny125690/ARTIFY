@@ -19,8 +19,6 @@ export const Sidebar = (props: DrawerContentComponentProps) => {
     try {
       const token = authState?.token
       
-      
-
       const result = await Axios.get(`/user`,{
         headers:{
           Authorization:`Bearer ${token}`
