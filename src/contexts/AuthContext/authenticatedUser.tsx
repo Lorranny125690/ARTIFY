@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store'
 import { createContext, useContext, useEffect, useState } from 'react';
-import Axios from '../axios';
+import Axios from '../../scripts/axios';
 
 //Refazendo do jeito certo ?? https://youtu.be/9vydY9SDtAo?si=iagd3PB4HwvdFfq5
 
@@ -13,7 +13,6 @@ interface AuthProps {
     onLogout?: () => Promise<any>;
 }
 
-const TOKEN_KEY = "my-jwt"
 export const API_URL = 'https://image-smith.onrender.com' 
 const AuthContext = createContext<AuthProps>({})
 
@@ -32,7 +31,7 @@ export const AuthProvider = ({children}: any) => {
 
     useEffect(() => {
         const loadToken = async () => {
-            const token = await SecureStore.getItemAsync(TOKEN_KEY)
+            const token = await SecureStore.getItemAsync("my-jwt")
             console.log("file: AuthContext.tsx:32 ~loadToken ~token:", token);
             if (token) {
                 axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -52,10 +51,10 @@ export const AuthProvider = ({children}: any) => {
       
           const token = result.data.token;
           const username = result.data.User;
-          alert(username)
+          //alert(username)
           if (token) {
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-            await SecureStore.setItemAsync(TOKEN_KEY, token);
+            await SecureStore.setItemAsync("my-jwt", token);
             await SecureStore.setItemAsync('userName', username);
             console.log("Token:" + token)
             console.log("username:" + username)
@@ -70,32 +69,29 @@ export const AuthProvider = ({children}: any) => {
 
     const login = async (Email: string, Password: string) => {
         try {
-          const result = await Axios.post(`/user/login`, { Email, Password });
-          const userName = await result.data.User;
+            const result = await Axios.post(`/user/login`, { Email, Password });
+            const {userId} = result.data
+        
+            console.log("Login result:", userId);
 
-          console.log("Login result:", result.data);
-          console.log("Username: ", result.data.userName)
+            setAuthState({
+                token: userId,
+                authenticated: true,
+            });
       
-          console.log("file: AuthContext.tsx:41 ~login ~result:", result)
-      
-          setAuthState({
-            token: result.data.token,
-            authenticated: true,
-          });
-      
-          axios.defaults.headers.common['Authorization'] = `Bearer ${result.data.token}`;
-      
-          await SecureStore.setItemAsync(TOKEN_KEY, result.data.token);
-          await SecureStore.setItemAsync('userName', userName);
-      
-          return result;
+            //axios.defaults.headers.common['Authorization'] = `Bearer ${userId}`;
+            console.warn("pre warning")
+            await SecureStore.setItemAsync("my-jwt", userId);
+            //   await SecureStore.setItemAsync('userName', userName);
+            console.log("Stored info to SecureStorage"+userId)
+            return result;
         } catch (e) {
           return { error: true, msg: (e as any).response?.data?.msg || "Erro ao fazer login" };
         }
     };      
 
     const logout = async () => {
-        await SecureStore.deleteItemAsync(TOKEN_KEY);
+        await SecureStore.deleteItemAsync("my-jwt");
 
         axios.defaults.headers.common['Authorization'] = ``;
         

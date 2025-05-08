@@ -7,7 +7,7 @@ import { AuthStack } from "./Rotas/AuthStack";
 import { HomeDrawer } from "./Rotas/HomeDrawer";
 import { ImagePreviewScreen } from "../screens/tools/functions/Preview";
 import type { RootStackParamList } from "../types/rootStackParamList";
-import { useAuth } from "../scripts/AuthContext/authenticatedUser";
+import { useAuth } from "../contexts/AuthContext/authenticatedUser";
 
 const Stack = createStackNavigator<RootStackParamList>();
 

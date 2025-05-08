@@ -5,7 +5,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft } from "lucide-react-native";
 import tw from "twrnc";
 import { RootStackParamList } from "../../types/rootStackParamList";
-import { API_URL, useAuth } from "../../scripts/AuthContext/authenticatedUser";
+import { API_URL, useAuth } from "../../contexts/AuthContext/authenticatedUser";
 import axios from "axios";
 
 export const LoginScreen = () => {
