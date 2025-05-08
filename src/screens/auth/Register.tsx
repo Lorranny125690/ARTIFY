@@ -5,7 +5,7 @@ import React, { useRef, useState } from 'react';
 import { ArrowLeft } from "lucide-react-native";
 import tw from "twrnc";
 import { RootStackParamList } from "../../types/rootStackParamList";
-import { useAuth } from "../../scripts/AuthContext/authenticatedUser";
+import { useAuth } from "../../contexts/AuthContext/authenticatedUser";
 
 export const SignupScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();

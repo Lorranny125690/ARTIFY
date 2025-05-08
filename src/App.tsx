@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet, StatusBar } from "react-native";
 import { RootNavigator } from "./navigation/AppNavigation";
 import { UserProvider } from "./screens/user";
-import { AuthProvider } from "./scripts/AuthContext/authenticatedUser";
+import { AuthProvider } from "./contexts/AuthContext/authenticatedUser";
 
 export function App() {
   return (

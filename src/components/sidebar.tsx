@@ -3,9 +3,11 @@ import { View, Text, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import tw from "twrnc";
 import { DrawerContentComponentProps } from "@react-navigation/drawer";
-import { useAuth } from "../scripts/AuthContext/authenticatedUser";
+import { useAuth } from "../contexts/AuthContext/authenticatedUser";
 import { useEffect, useState } from "react";
 import Axios from "../scripts/axios";
+import * as SecureStore from 'expo-secure-store'
+
 
 export const Sidebar = (props: DrawerContentComponentProps) => {
   const { navigation } = props;
@@ -15,12 +17,19 @@ export const Sidebar = (props: DrawerContentComponentProps) => {
 
   const myUser = async () => {
     try {
-      const result = await Axios.get(`/user`);
-      const username = result.data.User;
+      const token = authState?.token
+      
+      
 
-      if (username && username !== userName) {
-        setUserName(username);
-      }
+      const result = await Axios.get(`/user`,{
+        headers:{
+          Authorization:`Bearer ${token}`
+        }
+      })
+      console.log(result.data);
+      
+      const username = result.data.user.name;
+      setUserName(username)
     } catch (e: any) {
       console.warn("Erro ao buscar usuário:", e?.response?.data?.msg || e.message);
     } finally {
@@ -40,7 +49,7 @@ export const Sidebar = (props: DrawerContentComponentProps) => {
       <View style={tw`flex-row items-center py-4 border-b border-gray-700`}>
         <Icon name="user-circle" size={40} color="white" />
         <Text style={tw`text-white text-lg font-bold ml-3`}>
-          {loading ? "Carregando..." : userName ?? "Usuário"}
+          {userName!=undefined?userName:"Cadastre-se"}
         </Text>
       </View>
 
