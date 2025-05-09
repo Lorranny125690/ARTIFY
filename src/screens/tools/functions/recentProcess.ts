@@ -1,11 +1,11 @@
-import { AuthUser } from "../../../contexts/AuthContext/authenticatedUser";
-import { Axios } from "../../../scripts/axios";
-import { Images } from "../../../contexts/AuthContext/entitys/images";
+import  Axios  from "../../../scripts/axios";
+import type { Images } from "../../../types/entitys/images";
 
 
 export async function RecentProcessedImages():Promise<Images[]> {
-    const autenticationController = new AuthUser()
+    const autenticationController = new authState()
     const IsTokenStored = await autenticationController.GetUserToken();
+    
     if(IsTokenStored){
         await Axios.get("/image",{
             headers:{'Authorization': `Bearer ${IsTokenStored.id}`}
