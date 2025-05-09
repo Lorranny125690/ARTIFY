@@ -3,11 +3,9 @@ import { View, Text, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import tw from "twrnc";
 import { DrawerContentComponentProps } from "@react-navigation/drawer";
-import { useAuth } from "../contexts/AuthContext/authenticatedUser";
 import { useEffect, useState } from "react";
 import Axios from "../scripts/axios";
-import * as SecureStore from 'expo-secure-store'
-
+import { useAuth } from "../contexts/AuthContext/authenticatedUser";
 
 export const Sidebar = (props: DrawerContentComponentProps) => {
   const { navigation } = props;
