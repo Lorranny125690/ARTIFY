@@ -6,7 +6,7 @@ import { DrawerNavigationProp } from "@react-navigation/drawer";
 import { useNavigation } from "@react-navigation/native";
 import * as MediaLibrary from "expo-media-library";
 import * as FileSystem from "expo-file-system";
-import { useAuth } from "../../contexts/AuthContext/authenticatedUser";
+import { API_URL, useAuth } from "../../contexts/AuthContext/authenticatedUser";
 import type { RootStackParamList } from "../../types/rootStackParamList";
 import Axios from "../../scripts/axios";
 
@@ -42,27 +42,26 @@ export function ImageGallery() {
     fetchImages();
   }, []);
 
-  const handleImageDelete = async () => {
+  const handleDeleteImage = async () => {
     if (selectedImageIndex === null) return;
+  
+    const imageId = images[selectedImageIndex].id;
     try {
       const token = authState?.token;
-      const imageToDelete = images[selectedImageIndex];
-      const result = await Axios.delete(`/images`, {
+      const result = await Axios.delete(`/images/${imageId}`, {
         headers: { Authorization: `Bearer ${token}` },
-        data: { imageId: imageToDelete.id }
       });
-
-      console.log("Imagem excluída:", result.data);
-      Alert.alert("Sucesso", "Imagem excluída com sucesso.");
-      const updatedImages = [...images];
-      updatedImages.splice(selectedImageIndex, 1);
-      setImages(updatedImages);
-      setModalVisible(false);
-    } catch (e: any) {
-      console.warn("Erro ao excluir imagem:", e?.response?.data?.msg || e.message);
+  
+      if (result.status === 200) {
+        alert("Deletado com sucesso!");
+        fetchImages();
+      }
+    } catch (error: any) {
+      console.warn("Erro ao deletar a imagem:", error?.response?.data?.msg || error.message);
       Alert.alert("Erro", "Não foi possível excluir a imagem.");
     }
   };
+    
 
   const handleImageSave = async () => {
     if (selectedImageIndex === null) return;
@@ -169,7 +168,7 @@ export function ImageGallery() {
                   <Text style={tw`text-white text-xs mt-1`}>Editar</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity onPress={handleImageDelete} style={tw`items-center`}>
+                <TouchableOpacity onPress={handleDeleteImage} style={tw`items-center`}>
                   <Icon name="trash" size={28} color="#3B82F6" />
                   <Text style={tw`text-white text-xs mt-1`}>Excluir</Text>
                 </TouchableOpacity>
