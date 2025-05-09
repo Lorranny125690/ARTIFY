@@ -26,9 +26,9 @@ export function ImageGallery() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      console.log(result.data); 
+      console.log("Imagens recebidas:", result.data);
       
-      const imageList = result.data.images
+      const imageList = result.data.images;
       setImages(imageList);
     } catch (e: any) {
       console.warn("Erro ao buscar imagens:", e?.response?.data?.msg || e.message);
@@ -52,7 +52,7 @@ export function ImageGallery() {
         data: { imageId: imageToDelete.id }
       });
 
-      console.log(result.data);
+      console.log("Imagem excluída:", result.data);
       Alert.alert("Sucesso", "Imagem excluída com sucesso.");
       const updatedImages = [...images];
       updatedImages.splice(selectedImageIndex, 1);
@@ -122,15 +122,20 @@ export function ImageGallery() {
       ) : (
         <ScrollView>
           <View style={tw`flex-row flex-wrap justify-between px-2`}>
-            {images.map((image, index) => (
-              <TouchableOpacity key={index} onPress={() => openModal(index)}>
-                <Image 
-                  key={index}
-                  source={{ uri: image.uri }} 
-                  style={tw`w-40 h-40 rounded-lg m-2`} 
-                />
-              </TouchableOpacity>
-            ))}
+            {images.map((image, index) => {
+              const safeUri = encodeURI(image.uri);
+              return (
+                <TouchableOpacity key={index} onPress={() => openModal(index)}>
+                  <Image 
+                    source={{ uri: safeUri }} 
+                    style={tw`w-40 h-40 rounded-lg m-2 border border-red-500`}
+                    onError={(e) =>
+                      console.warn("Erro ao carregar imagem:", e.nativeEvent.error, "URI:", safeUri)
+                    }
+                  />
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </ScrollView>
       )}
@@ -146,9 +151,12 @@ export function ImageGallery() {
           <View style={tw`flex-1 justify-center items-center bg-black bg-opacity-80`}>
             <View style={tw`bg-slate-800 p-6 rounded-lg w-80`}>
               <Image 
-                source={{ uri: images[selectedImageIndex].uri }} 
-                style={tw`w-full h-40 rounded-lg mb-4`} 
+                source={{ uri: encodeURI(images[selectedImageIndex].uri) }} 
+                style={tw`w-full h-40 rounded-lg mb-4 border border-red-500`}
                 resizeMode="cover"
+                onError={(e) =>
+                  console.warn("Erro ao carregar imagem no modal:", e.nativeEvent.error)
+                }
               />
 
               <Text style={tw`text-xl text-white mb-4 text-center`}>

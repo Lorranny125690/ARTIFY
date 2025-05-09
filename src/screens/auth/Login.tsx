@@ -29,7 +29,7 @@ export const LoginScreen = () => {
   const login = async () => {
     const result = await onLogin!(email, password);
 
-    if (result.e) {
+    if (!result && result.error) {
       alert(result.msg);
     }
 
