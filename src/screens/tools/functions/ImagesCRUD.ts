@@ -2,7 +2,7 @@ import { useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import Axios from "../../../scripts/axios";
 
-export const useImagePicker = () => {
+export const useImagePicker = (onSelect?: (uri: string) => void) => {
   const [image, setImage] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -32,7 +32,9 @@ export const useImagePicker = () => {
       }
 
       if (!result.canceled && result.assets?.length) {
-        await saveImage(result.assets[0].uri);
+        const uri = result.assets[0].uri;
+        await saveImage(uri);
+        if (onSelect) onSelect(uri); // ⬅️ chama a função externa
       }
     } catch (error: any) {
       alert("Erro ao importar: " + error.message);
@@ -47,21 +49,16 @@ export const useImagePicker = () => {
     }
 
     const formData = new FormData();
-
     formData.append("images", {
       uri: image,
       type: "image/png",
       name: "product-image.jpg",
     } as any);
 
-    const config = {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    };
-
     try {
-      await Axios.post("/images", formData, config);
+      await Axios.post("/images", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
     } catch (error: any) {
       alert("Erro ao enviar imagem: " + error.message);
     }
@@ -89,3 +86,4 @@ export const useImagePicker = () => {
     sendBack,
   };
 };
+
