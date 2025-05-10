@@ -12,15 +12,54 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import * as MediaLibrary from "expo-media-library";
 import * as FileSystem from "expo-file-system";
 import Icon from "react-native-vector-icons/FontAwesome";
+import Axios from "../../../scripts/axios";
+import { useAuth } from "../../../contexts/AuthContext/authenticatedUser";
+import { RootStackParamList } from "../../../types/rootStackParamList";
+import type { StackNavigationProp } from "@react-navigation/stack";
 
 export const ImagePreviewScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const route = useRoute();
   const { imageUri } = route.params as { imageUri: string };
+  const { authState } = useAuth();
 
-  const handleSave = () => {
-    Alert.alert("Guardar", "Função de salvar será implementada futuramente.");
-  };
+  const handleSave = async () => {
+    try {
+      const token = authState?.token;
+      if (!token) {
+        Alert.alert("Erro", "Usuário não autenticado.");
+        return;
+      }
+  
+      const formData = new FormData();
+      formData.append("images", {
+        uri: imageUri,
+        type: "image/jpeg",
+        name: `image_${Date.now()}.jpg`,
+      } as any);
+
+      const response = await Axios.post("/images", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      if (response.status === 201) {
+        const image = response.data.image;
+        Alert.alert("Sucesso", `Imagem enviada com sucesso! ID: ${image.Id}`);
+        console.log("Imagem salva:", image);
+
+        navigation.navigate("SaveImages", { imageId: image.Id });
+  
+      } else {
+        Alert.alert("Erro", "Erro ao enviar a imagem.");
+      }
+    } catch (error: any) {
+      console.warn("Erro ao guardar imagem:", error);
+      Alert.alert("Erro", error?.response?.data?.msg || "Erro ao enviar imagem.");
+    }
+  };  
 
   const handleDownload = async () => {
     const { status } = await MediaLibrary.requestPermissionsAsync();
