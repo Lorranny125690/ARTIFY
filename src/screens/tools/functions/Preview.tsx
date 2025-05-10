@@ -30,18 +30,17 @@ export const ImagePreviewScreen = () => {
         Alert.alert("Erro", "Usuário não autenticado.");
         return;
       }
-  
+
       const formData = new FormData();
       formData.append("images", {
         uri: imageUri,
         type: "image/jpeg",
         name: `image_${Date.now()}.jpg`,
-      } as any);
+      } as any); 
 
       const response = await Axios.post("/images", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
         },
       });
 
@@ -51,7 +50,6 @@ export const ImagePreviewScreen = () => {
         console.log("Imagem salva:", image);
 
         navigation.navigate("SaveImages", { imageId: image.Id });
-  
       } else {
         Alert.alert("Erro", "Erro ao enviar a imagem.");
       }
@@ -59,7 +57,7 @@ export const ImagePreviewScreen = () => {
       console.warn("Erro ao guardar imagem:", error);
       Alert.alert("Erro", error?.response?.data?.msg || "Erro ao enviar imagem.");
     }
-  };  
+  };
 
   const handleDownload = async () => {
     const { status } = await MediaLibrary.requestPermissionsAsync();
