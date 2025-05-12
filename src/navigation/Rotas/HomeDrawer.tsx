@@ -2,7 +2,7 @@ import React from "react";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { Sidebar } from "../../components/sidebar";
 import { HomeScreen } from "../../screens/Home";
-import { ImageGallery } from "../../screens/images/MinhasIMagens";
+import { ImageGallery } from "../../screens/images/MinhasImagens";
 import { Ferramentas } from "../../screens/tools/Ferramentas";
 
 const Drawer = createDrawerNavigator();
