@@ -31,7 +31,7 @@ export const LoginScreen = () => {
 
     if (!result && result.error) {
       alert(result.msg);
-    }
+    }3
 
     if (!email || !password) {
       alert("Preencha todos os campos!");
