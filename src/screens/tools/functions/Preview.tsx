@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -13,51 +13,59 @@ import * as MediaLibrary from "expo-media-library";
 import * as FileSystem from "expo-file-system";
 import Icon from "react-native-vector-icons/FontAwesome";
 import Axios from "../../../scripts/axios";
-import { useAuth } from "../../../contexts/AuthContext/authenticatedUser";
+import { API_URL, useAuth } from "../../../contexts/AuthContext/authenticatedUser";
 import { RootStackParamList } from "../../../types/rootStackParamList";
 import type { StackNavigationProp } from "@react-navigation/stack";
+import type { RouteProp } from "@react-navigation/native";
+import type { ImageType } from "../../images/Services/MinhasImagens";
 
 export const ImagePreviewScreen = () => {
+  const [images, setImages] = useState<ImageType[]>([]);
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const route = useRoute();
-  const { imageUri } = route.params as { imageUri: string };
   const { authState } = useAuth();
+  const route = useRoute();
+  const { imageUri, imageId } = route.params as { imageUri: string; imageId: string };
 
   const handleSave = async () => {
     try {
       const token = authState?.token;
-      if (!token) {
-        Alert.alert("Erro", "Usuário não autenticado.");
-        return;
-      }
-
+  
       const formData = new FormData();
-      formData.append("images", {
+      formData.append("file", {
         uri: imageUri,
-        type: "image/jpeg",
-        name: `image_${Date.now()}.jpg`,
-      } as any); 
-
+        name: "imagem.png",
+        type: "image/png"
+      } as any);
+  
       const response = await Axios.post("/images", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+  
+      const img = response.data.image;
+  
+      const savedImage = {
+        id: img.id,
+        uri: img.stored_filepath.startsWith("http")
+          ? img.stored_filepath
+          : `${API_URL}${img.stored_filepath}`,
+        filename: img.original_filename,
+      };
 
-      if (response.status === 201) {
-        const image = response.data.image;
-        Alert.alert("Sucesso", `Imagem enviada com sucesso! ID: ${image.Id}`);
-        console.log("Imagem salva:", image);
-
-        navigation.navigate("SaveImages", { imageId: image.Id });
-      } else {
-        Alert.alert("Erro", "Erro ao enviar a imagem.");
-      }
-    } catch (error: any) {
-      console.warn("Erro ao guardar imagem:", error);
-      Alert.alert("Erro", error?.response?.data?.msg || "Erro ao enviar imagem.");
+      if (!imageUri.startsWith("file://")) {
+        console.log("imageUri:", imageUri);
+        console.warn("URI inválida para upload:", imageUri);
+        return;
+      }      
+  
+      setImages([savedImage]);
+      Alert.alert("Sucesso", "Imagem enviada com sucesso!");
+    } catch (e: any) {
+      console.warn("Erro ao fazer upload:", e?.response?.data || e.message);
+      Alert.alert("Erro", "Não foi possível salvar a imagem.");
     }
-  };
+  };  
 
   const handleDownload = async () => {
     const { status } = await MediaLibrary.requestPermissionsAsync();
@@ -70,7 +78,7 @@ export const ImagePreviewScreen = () => {
     }
 
     try {
-      const fileName = imageUri.split("/").pop() || `imagem_${Date.now()}.jpg`;
+      const fileName = imageUri?.split("/").pop() || `imagem_${Date.now()}.jpg`;
       const destPath = `${FileSystem.cacheDirectory}${fileName}`;
 
       await FileSystem.copyAsync({
@@ -85,6 +93,16 @@ export const ImagePreviewScreen = () => {
       Alert.alert("Erro", "Não foi possível salvar a imagem.");
     }
   };
+
+  if (!imageUri) {
+    return (
+      <SafeAreaView style={tw`flex-1 bg-slate-900 justify-center items-center`}>
+        <Text style={tw`text-white text-center`}>
+          Nenhuma imagem foi fornecida para pré-visualização.
+        </Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={tw`flex-1 bg-slate-900`}>
