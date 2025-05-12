@@ -1,14 +1,37 @@
-import React from "react";
+import React, { useState } from "react";
 import {
-  View, Text, Image, TouchableOpacity, Modal, ScrollView, Alert, ActivityIndicator,
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  Modal,
+  ScrollView,
+  Alert,
+  ActivityIndicator,
+  ImageProps,
 } from "react-native";
 import tw from "twrnc";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { DrawerNavigationProp } from "@react-navigation/drawer";
 import { useNavigation } from "@react-navigation/native";
-import { useImagesServices } from "./Services/MinhasImagens"; // <-- aqui
+import { useImagesServices } from "./Services/MinhasImagens";
 import type { RootStackParamList } from "../../types/rootStackParamList";
-import { CalendarDays, Download, Star, Trash2 } from "lucide-react-native";
+import { Star } from "lucide-react-native";
+
+// FallbackImage embutido aqui mesmo
+function FallbackImage(props: ImageProps) {
+  const [error, setError] = useState(false);
+
+  const isRemote = props.source && typeof props.source === "object" && "uri" in props.source;
+
+  return (
+    <Image
+      {...props}
+      source={error || !isRemote ? require("../../assets/images.png") : props.source}
+      onError={() => setError(true)}
+    />
+  );
+}
 
 export function ImageGallery() {
   const navigation = useNavigation<DrawerNavigationProp<RootStackParamList>>();
@@ -28,7 +51,10 @@ export function ImageGallery() {
     <View style={tw`flex-1 bg-slate-900`}>
       {/* Header */}
       <View style={tw`mb-2 bg-slate-800 flex-row justify-between items-center py-2 px-4`}>
-        <Image source={require("../../assets/iconArtify.png")} style={tw`w-20 h-9`} />
+        <Image
+          source={require("../../assets/iconArtify.png")}
+          style={tw`w-20 h-9`}
+        />
         <TouchableOpacity onPress={() => navigation.openDrawer()}>
           <Icon name="bars" size={24} color="#fff" />
         </TouchableOpacity>
@@ -45,15 +71,12 @@ export function ImageGallery() {
       ) : (
         <ScrollView>
           <View style={tw`flex-row flex-wrap justify-between px-2`}>
-            {images.map((image, index: any) => (
+            {images.map((image, index: number) => (
               <TouchableOpacity key={image.id} onPress={() => openModal(index)}>
-                <Image
+                <FallbackImage
                   source={{ uri: image.uri }}
-                  style={tw`w-40 h-40 rounded-lg m-2 border-2 border-white`}
+                  style={tw`w-40 h-40 rounded-lg m-2`}
                   resizeMode="cover"
-                  onError={(e) =>
-                    console.warn("Erro ao carregar imagem:", e.nativeEvent.error, "URI:", image.uri)
-                  }
                 />
               </TouchableOpacity>
             ))}
@@ -64,42 +87,56 @@ export function ImageGallery() {
       {/* Modal */}
       {selectedImageIndex !== null && (
         <Modal
-      animationType="fade"
-      transparent={true}
-      visible={modalVisible}
-      onRequestClose={() => setModalVisible(false)}
-    >
-      <View style={tw`flex-1 items-center justify-center bg-black bg-opacity-50`}>
-        <View style={tw`bg-[#1c1c2e] p-4 rounded-2xl w-80 items-center`}>
-          <Image
-            source={{ uri: images[selectedImageIndex].uri }}
-            style={tw`w-64 h-40 rounded-lg mb-4 border border-red-500`}
-            resizeMode="contain"
-          />
+          animationType="fade"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={tw`flex-1 items-center justify-center bg-black bg-opacity-50`}>
+            <View style={tw`bg-slate-800 w-79 h-98 p-4 justify-center rounded-2 items-center`}>
+              <FallbackImage
+                source={{ uri: images[selectedImageIndex].uri }}
+                style={tw`absolute rounded-2 bottom-20 left-0 right-0 w-79 h-79`}
+                resizeMode="cover"
+              />
 
-          <Text style={tw`text-white text-lg font-semibold`}>Jinx</Text>
-          <View style={tw`flex-row items-center mt-1 mb-3`}>
-            <CalendarDays color="white" size={16} />
-            <Text style={tw`text-gray-300 ml-2 text-sm`}>08/04/2025</Text>
-          </View>
+              <View style={tw`absolute m-3 bottom-2 left-0 right-0 flex-row items-center justify-center`}>
+                {/* Informações da imagem */}
+                <View style={tw`flex-1`}>
+                  <Text
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                    style={tw`text-white text-sm font-semibold`}
+                  >
+                    {images[selectedImageIndex]?.filename}
+                  </Text>
+                  <View style={tw`flex-row items-center mt-1`}>
+                    <Text style={tw`text-white text-sm`}>08/04/2025</Text>
+                  </View>
+                </View>
 
-          <View style={tw`flex-row justify-around w-full`}>
-            <TouchableOpacity style={tw`flex-row items-center`} onPress={() => {/* delete logic */}}>
-              <Trash2 color="red" size={16} />
-              <Text style={tw`text-red-500 ml-1`}>Excluir</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={tw`flex-row items-center`} onPress={() => {/* download logic */}}>
-              <Download color="skyblue" size={16} />
-              <Text style={tw`text-sky-400 ml-1`}>Download</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={tw`flex-row items-center`} onPress={() => {/* favorite logic */}}>
-              <Star color="yellow" size={16} />
-              <Text style={tw`text-yellow-400 ml-1`}>Favoritar</Text>
-            </TouchableOpacity>
+                {/* Botões */}
+                <View style={tw`flex-row items-center ml-4 gap-2`}>
+                  <TouchableOpacity style={tw`items-center`} onPress={handleDelete}>
+                    <Icon name="trash" size={28} color="#62748E" />
+                    <Text style={tw`text-white text-xs`}>Excluir</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={tw`items-center`} onPress={handleImageSave}>
+                    <Icon name="save" size={28} color="#62748E" />
+                    <Text style={tw`text-white text-xs`}>Download</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={tw`items-center`} onPress={() => {}}>
+                    <Star color="#62748E" size={28} />
+                    <Text style={tw`text-white text-xs`}>Favoritar</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
           </View>
-        </View>
-      </View>
-    </Modal>)}
+        </Modal>
+      )}
     </View>
   );
 }
