@@ -8,7 +8,7 @@ import { Alert } from "react-native";
 import * as MediaLibrary from "expo-media-library";
 import * as FileSystem from "expo-file-system";
 
-export type ImageType = { id: string; uri: string };
+export type ImageType = { id: string; uri: string, filename: string };
 
 export function useImagesServices() {
   const [images, setImages] = useState<ImageType[]>([]);
@@ -26,11 +26,14 @@ export function useImagesServices() {
       });
 
       const imageList = result.data.images;
+
+      console.log(imageList)   
       const imagesWithUrls = imageList.map((img: any) => ({
         id: img.Id,
         uri: img.stored_filepath.startsWith("http")
           ? img.stored_filepath
           : `${API_URL}${img.stored_filepath}`,
+        filename: img.original_filename
       }));
 
       setImages(imagesWithUrls);
