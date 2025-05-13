@@ -18,53 +18,31 @@ import { RootStackParamList } from "../../../types/rootStackParamList";
 import type { StackNavigationProp } from "@react-navigation/stack";
 import type { RouteProp } from "@react-navigation/native";
 import type { ImageType } from "../../images/Services/MinhasImagens";
+import { uploadImage } from "./Imagem";
 
 export const ImagePreviewScreen = () => {
   const [images, setImages] = useState<ImageType[]>([]);
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const { authState } = useAuth();
   const route = useRoute();
-  const { imageUri, imageId } = route.params as { imageUri: string; imageId: string };
+  const { imageUri } = route.params as { imageUri: string };
 
-  const handleSave = async () => {
-    try {
-      const token = authState?.token;
+  const handleSave = () => {
+    console.log("handleSave foi chamado");
+    console.log("authState?.token:", authState?.token);
+    console.log("imageId:", imageUri);
+    console.log("ROUTE PARAMS:", route.params);
   
-      const formData = new FormData();
-      formData.append("file", {
-        uri: imageUri,
-        name: "imagem.png",
-        type: "image/png"
-      } as any);
-  
-      const response = await Axios.post("/images", formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-  
-      const img = response.data.image;
-  
-      const savedImage = {
-        id: img.id,
-        uri: img.stored_filepath.startsWith("http")
-          ? img.stored_filepath
-          : `${API_URL}${img.stored_filepath}`,
-        filename: img.original_filename,
-      };
-
-      if (!imageUri.startsWith("file://")) {
-        console.log("imageUri:", imageUri);
-        console.warn("URI inválida para upload:", imageUri);
-        return;
-      }      
-  
-      setImages([savedImage]);
-      Alert.alert("Sucesso", "Imagem enviada com sucesso!");
-    } catch (e: any) {
-      console.warn("Erro ao fazer upload:", e?.response?.data || e.message);
-      Alert.alert("Erro", "Não foi possível salvar a imagem.");
+    if (!authState?.token || !imageUri) {
+      Alert.alert("Erro", "Token ou imageId ausente.");
+      return;
     }
+  
+    uploadImage(imageUri, authState.token, () => {
+      console.log("Upload feito");
+    });
+  
+    Alert.alert("Chamou!", "Upload acionado.");
   };  
 
   const handleDownload = async () => {
@@ -126,7 +104,7 @@ export const ImagePreviewScreen = () => {
       {/* Ações */}
       <View style={tw`px-6 pb-6`}>
         <TouchableOpacity
-          onPress={handleSave}
+          onPress={() => {handleSave()}}
           style={tw`bg-blue-500 py-3 rounded-3xl mb-3 shadow-md`}
         >
           <Text style={tw`text-white text-center text-base font-semibold`}>

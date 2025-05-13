@@ -8,7 +8,9 @@ import { Alert } from "react-native";
 import * as MediaLibrary from "expo-media-library";
 import * as FileSystem from "expo-file-system";
 
-export type ImageType = { id: string; uri: string, filename: string };
+export type ImageType = {
+  id: string; uri: string, filename: string, dataFormatada: string 
+};
 
 export function useImagesServices() {
   const [images, setImages] = useState<ImageType[]>([]);
@@ -28,13 +30,19 @@ export function useImagesServices() {
       const imageList = result.data.images;
 
       console.log(imageList)   
-      const imagesWithUrls = imageList.map((img: any) => ({
-        id: img.Id,
-        uri: img.stored_filepath.startsWith("http")
-          ? img.stored_filepath
-          : `${API_URL}${img.stored_filepath}`,
-        filename: img.original_filename
-      }));
+      const imagesWithUrls = imageList.map((img: any) => {
+        const data = new Date(img.created_at);
+        const dataFormatada = data.toLocaleDateString("pt-BR");
+      
+        return {
+          id: img.Id,
+          uri: img.stored_filepath.startsWith("http")
+            ? img.stored_filepath
+            : `${API_URL}${img.stored_filepath}`,
+          filename: img.original_filename,
+          dataFormatada,
+        };
+      });         
 
       setImages(imagesWithUrls);
     } catch (e: any) {
@@ -51,10 +59,7 @@ export function useImagesServices() {
     }
   }, [authState?.authenticated]);
 
-  const handleDelete = () => {
-    if (selectedImageIndex === null) return;
-    const imageId = images[selectedImageIndex].id;
-
+  const handleDelete = (deleteImage: ImageType) => {
     Alert.alert(
       "Excluir imagem",
       "Tem certeza que deseja excluir esta imagem?",
@@ -65,11 +70,15 @@ export function useImagesServices() {
           onPress: async () => {
             try {
               const token = authState?.token;
-              await Axios.delete(`/images/${imageId}`, {
+  
+              await Axios.delete(`/images/${deleteImage.id}`, {
                 headers: { Authorization: `Bearer ${token}` },
               });
-
-              setImages((prev) => prev.filter((img) => img.id !== imageId));
+  
+              // Atualiza a lista local
+              const updatedImages = images.filter(image => image.id !== deleteImage.id);
+              setImages(updatedImages);
+              Alert.alert("Sucesso", "Imagem excluída com sucesso.");
               setModalVisible(false);
             } catch (e: any) {
               console.warn("Erro ao excluir imagem:", e?.response?.data?.msg || e.message);
@@ -80,7 +89,7 @@ export function useImagesServices() {
       ],
       { cancelable: false }
     );
-  };
+  };  
 
   const handleImageSave = async () => {
     if (selectedImageIndex === null) return;
