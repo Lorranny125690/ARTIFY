@@ -16,7 +16,6 @@ import Axios from "../../../scripts/axios";
 import { API_URL, useAuth } from "../../../contexts/AuthContext/authenticatedUser";
 import { RootStackParamList } from "../../../types/rootStackParamList";
 import type { StackNavigationProp } from "@react-navigation/stack";
-import type { RouteProp } from "@react-navigation/native";
 import type { ImageType } from "../../images/Services/MinhasImagens";
 import { uploadImage } from "./Imagem";
 

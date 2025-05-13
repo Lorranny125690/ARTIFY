@@ -8,19 +8,15 @@ export const uploadImage = async (
   onSuccess: () => void
 ) => {
   try {
-    const fileName = imageUri.split("/").pop() || "imagem.jpg";
-
     const formData = new FormData();
-    formData.append("images", {
+    formData.append("images", JSON.parse(JSON.stringify({
       uri: imageUri,
-      name: fileName,
-      type: "image/jpg",
-    } as any);
+      type: "image/png",
+    })));
 
-    const response = await Axios.post(`${API_URL}/images`, formData, {
+    const response = await Axios.post(`/images`, formData, {
       headers: {
         Authorization: `Bearer ${token}`,
-        "Content-Type": "multipart/form-data",
       },
     });
 
