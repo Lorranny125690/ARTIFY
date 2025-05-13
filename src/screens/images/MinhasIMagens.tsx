@@ -18,7 +18,6 @@ import { useImagesServices } from "./Services/MinhasImagens";
 import type { RootStackParamList } from "../../types/rootStackParamList";
 import { Star } from "lucide-react-native";
 
-// FallbackImage embutido aqui mesmo
 function FallbackImage(props: ImageProps) {
   const [error, setError] = useState(false);
 
@@ -59,6 +58,7 @@ export function ImageGallery() {
           <Icon name="bars" size={24} color="#fff" />
         </TouchableOpacity>
       </View>
+      <Text style={tw`text-white text-xl ml-5 mb-7 mt-2`}>Minhas imagens...</Text>
 
       {/* Conteúdo */}
       {loading ? (
@@ -70,12 +70,12 @@ export function ImageGallery() {
         <Text style={tw`text-white text-center mt-4`}>Nenhuma imagem encontrada.</Text>
       ) : (
         <ScrollView>
-          <View style={tw`flex-row flex-wrap justify-between px-2`}>
+          <View style={tw`left-2 flex-row flex-wrap items-center px-2 gap-5`}>
             {images.map((image, index: number) => (
               <TouchableOpacity key={image.id} onPress={() => openModal(index)}>
                 <FallbackImage
                   source={{ uri: image.uri }}
-                  style={tw`w-40 h-40 rounded-lg m-2`}
+                  style={tw`w-30 h-30 rounded-4`}
                   resizeMode="cover"
                 />
               </TouchableOpacity>
@@ -111,13 +111,13 @@ export function ImageGallery() {
                     {images[selectedImageIndex]?.filename}
                   </Text>
                   <View style={tw`flex-row items-center mt-1`}>
-                    <Text style={tw`text-white text-sm`}>08/04/2025</Text>
+                  <Text style={tw`text-white text-sm`}>{images[selectedImageIndex]?.dataFormatada}</Text>
                   </View>
                 </View>
 
                 {/* Botões */}
                 <View style={tw`flex-row items-center ml-4 gap-2`}>
-                  <TouchableOpacity style={tw`items-center`} onPress={handleDelete}>
+                  <TouchableOpacity style={tw`items-center`} onPress={() => handleDelete(images[selectedImageIndex])} >
                     <Icon name="trash" size={28} color="#62748E" />
                     <Text style={tw`text-white text-xs`}>Excluir</Text>
                   </TouchableOpacity>
