@@ -1,8 +1,5 @@
-import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { StackNavigationProp } from "@react-navigation/stack";
 import * as ImagePicker from "expo-image-picker";
 import { Alert } from "react-native";
-import { RootStackParamList } from "../../../types/rootStackParamList";
 
 export const openGallery = async ():Promise<string> => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
