@@ -1,11 +1,12 @@
 import { Alert } from "react-native";
 import { API_URL } from "../../../contexts/AuthContext/authenticatedUser";
-import Axios from "../../../scripts/axios";
+
 interface formDataUpload{
   uri: string,
   name: string,
   type: string,
 }
+
 export const uploadImage = async (
   imageUri: string,
   token: string,
@@ -28,7 +29,6 @@ export const uploadImage = async (
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
-          // ❌ NÃO defina 'Content-Type' manualmente
         },
         body: formData
 });

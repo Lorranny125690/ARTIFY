@@ -61,6 +61,9 @@ export const LoginScreen = () => {
         onChangeText={(text: string) => setEmail(text)}
         value={email}
       />
+      if (!email) {
+        <Text style={tw`text-red-500 mb-1`}>Esse campo é obrigatório</Text>
+      }
 
       <TextInput
         placeholder="Senha"
@@ -70,6 +73,9 @@ export const LoginScreen = () => {
         onChangeText={(text: string) => setPassword(text)}
         value={password}
       />
+      if (!password) {
+        <Text style={tw`text-red-500 mb-1`}>Esse campo é obrigatório</Text>
+      }
 
       <TouchableOpacity onPress={() => navigation.navigate("Email")}>
         <Text style={tw`text-gray-300 mb-12`}>Esqueceu a senha?</Text>

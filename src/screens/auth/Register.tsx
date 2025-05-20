@@ -14,7 +14,7 @@ export const SignupScreen = () => {
   const [Password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('');
   const {onLogin, onRegister} = useAuth();
-
+  const [pressed,setPressed] = useState<boolean>(false)
   const login = async () => {
     const result =  await onLogin!(Email, Password);
     if (result.e) {
@@ -23,6 +23,7 @@ export const SignupScreen = () => {
   }
 
   const register = async () => {
+    setPressed(true)
     if (Password !== confirmPassword) {
       alert("As senhas não coincidem");
       return;
@@ -30,7 +31,18 @@ export const SignupScreen = () => {
     const result = await onRegister!(Email, Password, userName);
   
     await login(); 
-  };   
+  };
+
+  function validar() {
+    if (!Email) {
+      <Text style={tw`text-red-500 mb-1`}>Esse campo é obrigatório</Text>
+    }
+    else if (!Password) {
+      <Text style={tw`text-red-500 mb-1`}>Esse campo é obrigatório</Text>
+    } else if (!userName) {
+      <Text style={tw`text-red-500 mb-1`}>Esse campo é obrigatório</Text>
+    }
+  }
 
     return (
       <ScrollView contentContainerStyle={tw`flex-1 bg-slate-900 items-center justify-center`}> 
@@ -55,12 +67,16 @@ export const SignupScreen = () => {
           style={tw`bg-slate-800 w-full max-w-[300px] mb-8 p-3 rounded-lg text-white`}
           onChangeText={(text: string) => setUserName(text)} value={userName}
         />
+        {!userName && pressed?<></>:<Text style={tw`text-red-500 mb-1`}>Esse campo é obrigatório</Text>}
+
         <TextInput 
           placeholder="Email"
           placeholderTextColor="#B0B0B0"
           style={tw`bg-slate-800 w-full max-w-[300px] mb-8 p-3 rounded-lg text-white`}
           onChangeText={(text: string) => setEmail(text)} value={Email}
         />
+        {!Email && pressed?<></>:<Text style={tw`text-red-500 mb-1`}>Esse campo é obrigatório</Text>}
+
         <TextInput 
           placeholder="Senha"
           placeholderTextColor="#B0B0B0"
@@ -68,6 +84,7 @@ export const SignupScreen = () => {
           style={tw`bg-slate-800 w-full max-w-[300px] mb-8 p-3 rounded-lg text-white`}
           onChangeText={(text: string) => setPassword(text)} value={Password}
         />
+        {!Password && pressed?<></>:<Text style={tw`text-red-500 mb-1`}>Esse campo é obrigatório</Text>}
 
         <TextInput 
         placeholder="Confirmar senha"
@@ -76,10 +93,12 @@ export const SignupScreen = () => {
         style={tw`bg-slate-800 w-full max-w-[300px] mb-8 p-3 rounded-lg text-white`}
         onChangeText={(text: string) => setConfirmPassword(text)} value={confirmPassword}
         />
+        {!confirmPassword && pressed?<></>:<Text style={tw`text-red-500 mb-1`}>Esse campo é obrigatório</Text>}
   
         {/* Botão Cadastrar */}
         <TouchableOpacity style={tw`bg-slate-800 py-2 px-10 rounded-lg mb-4 w-45 h-12 justify-center items-center`}
           onPress={register}
+          
         >
           <Text style={tw`text-white text-lg font-semibold`}>Cadastrar</Text>
         </TouchableOpacity>
