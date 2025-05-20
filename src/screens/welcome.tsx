@@ -3,7 +3,6 @@ import { View, Text, TouchableOpacity, Image } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import tw from "twrnc";
-import { Axios } from "../scripts/axios";
 import { RootStackParamList } from "../types/rootStackParamList";
 
 export const WelcomeScreen = () => {
