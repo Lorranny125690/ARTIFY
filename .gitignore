@@ -2,6 +2,7 @@
 
 # dependencies
 node_modules/
+src/assets/Postman-win64-Setup.exe
 
 # Expo
 .expo/
