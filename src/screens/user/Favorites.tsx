@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
   Image,
   TouchableOpacity,
+  Modal,
   ScrollView,
+  Alert,
   ActivityIndicator,
   ImageProps,
 } from "react-native";
@@ -12,11 +14,11 @@ import tw from "twrnc";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { DrawerNavigationProp } from "@react-navigation/drawer";
 import { useNavigation } from "@react-navigation/native";
-import { useImagesServices } from "./Services/Favorites";
+import { Favoritos } from "./Services/Favorites";
 import type { RootStackParamList } from "../../types/rootStackParamList";
 
 function FallbackImage(props: ImageProps) {
-  const [error, setError] = React.useState(false);
+  const [error, setError] = useState(false);
 
   const isRemote = props.source && typeof props.source === "object" && "uri" in props.source;
 
@@ -29,20 +31,25 @@ function FallbackImage(props: ImageProps) {
   );
 }
 
-export function Favoritos() {
+export function Favorito() {
   const navigation = useNavigation<DrawerNavigationProp<RootStackParamList>>();
-  const { images, loading, openModal } = useImagesServices();
-
-  const favoritos = images.filter(img => img.favorito);
+  const {
+    images,
+    loading,
+    modalVisible,
+    selectedImageIndex,
+    openModal,
+    handleImageEdit,
+    handleDelete,
+    handleImageSave,
+    setModalVisible,
+  } = Favoritos();
 
   return (
     <View style={tw`flex-1 bg-slate-900`}>
       {/* Header */}
       <View style={tw`mb-2 bg-slate-800 flex-row justify-between items-center py-2 px-4`}>
-        <Image
-          source={require("../../assets/iconArtify.png")}
-          style={tw`w-20 h-9`}
-        />
+        <Image source={require("../../assets/iconArtify.png")} style={tw`w-20 h-9`} />
         <TouchableOpacity onPress={() => navigation.openDrawer()}>
           <Icon name="bars" size={24} color="#fff" />
         </TouchableOpacity>
@@ -55,12 +62,12 @@ export function Favoritos() {
           <ActivityIndicator size="large" color="#60A5FA" />
           <Text style={tw`text-white mt-2`}>Carregando favoritos...</Text>
         </View>
-      ) : favoritos.length === 0 ? (
+      ) : images.length === 0 ? (
         <Text style={tw`text-white text-center mt-4`}>Nenhuma imagem favoritada.</Text>
       ) : (
         <ScrollView>
           <View style={tw`left-2 flex-row flex-wrap px-2 gap-5`}>
-            {favoritos.map((image, index) => (
+            {images.map((image, index) => (
               <TouchableOpacity key={image.id} onPress={() => openModal(index)}>
                 <FallbackImage
                   source={{ uri: image.uri }}

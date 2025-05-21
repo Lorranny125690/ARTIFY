@@ -1,0 +1,38 @@
+[33m77ba4d8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mdev[m[33m, [m[1;31morigin/dev[m[33m)[m HEAD@{0}: reset: moving to HEAD~1
+[33mbb7c207[m HEAD@{1}: reset: moving to HEAD~1
+[33m670228f[m HEAD@{2}: reset: moving to HEAD~1
+[33m6b2786c[m HEAD@{3}: reset: moving to HEAD~1
+[33md27b417[m HEAD@{4}: reset: moving to HEAD~1
+[33md3d52cb[m HEAD@{5}: reset: moving to HEAD~1
+[33m4b29dad[m HEAD@{6}: reset: moving to HEAD~1
+[33m3767251[m HEAD@{7}: reset: moving to HEAD~1
+[33mb7dd762[m HEAD@{8}: reset: moving to HEAD~1
+[33m8aa9ef6[m HEAD@{9}: reset: moving to HEAD
+[33m8aa9ef6[m HEAD@{10}: commit: TOOLS RENEW
+[33mb7dd762[m HEAD@{11}: commit: TOOLS RENEW
+[33m3767251[m HEAD@{12}: commit: TOOLS RENEW
+[33m4b29dad[m HEAD@{13}: commit: validação feita
+[33md3d52cb[m HEAD@{14}: commit: fix: upload issue
+[33md27b417[m HEAD@{15}: commit: desiso
+[33m6b2786c[m HEAD@{16}: commit: STILLUPLOAD
+[33m670228f[m HEAD@{17}: commit: falha no upload de imagens
+[33mbb7c207[m HEAD@{18}: commit: upload error
+[33m77ba4d8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mdev[m[33m, [m[1;31morigin/dev[m[33m)[m HEAD@{19}: commit: ok
+[33mf210225[m HEAD@{20}: commit: IMAGESCORRECT
+[33m7e745cf[m HEAD@{21}: commit: more erros
+[33ma750ab3[m HEAD@{22}: commit: erros
+[33m5baac3c[m HEAD@{23}: commit: IMAGESCRUD API
+[33m8e79026[m HEAD@{24}: commit: IMAGESCRUD
+[33m3640185[m HEAD@{25}: commit: IMAGES DELETE DONE
+[33m3f49331[m HEAD@{26}: commit: IMAGES CONSUME
+[33mea3d30e[m HEAD@{27}: commit: feat: Image Comsumption
+[33m2a59110[m HEAD@{28}: commit: TESTING GIT
+[33m91c97a9[m HEAD@{29}: checkout: moving from main to dev
+[33m00c8b56[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{30}: checkout: moving from dev to main
+[33m91c97a9[m HEAD@{31}: checkout: moving from main to dev
+[33m00c8b56[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{32}: checkout: moving from dev to main
+[33m91c97a9[m HEAD@{33}: commit: FORCE
+[33m04f7ebe[m HEAD@{34}: commit: ERRORLOGIN
+[33m73c6c1b[m HEAD@{35}: checkout: moving from main to dev
+[33m00c8b56[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{36}: commit: fix: update dependency to sdk 53
+[33m343f158[m HEAD@{37}: clone: from https://github.com/Lorranny125690/ARTIFY.git

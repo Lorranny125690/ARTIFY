@@ -8,51 +8,32 @@ import { Alert } from "react-native";
 import * as MediaLibrary from "expo-media-library";
 import * as FileSystem from "expo-file-system";
 
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
 export type ImageType = {
-  id: string;
-  uri: string;
-  filename: string;
-  dataFormatada: string;
-  favorito?: boolean;
+  id: string; uri: string, filename: string, dataFormatada: string 
 };
 
-export function useImagesServices() {
+export function Favoritos() {
   const [images, setImages] = useState<ImageType[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const { authState } = useAuth();
 
-  const getFavoritosStorage = async (): Promise<string[]> => {
-    try {
-      const data = await AsyncStorage.getItem("favoritos");
-      return data ? JSON.parse(data) : [];
-    } catch {
-      return [];
-    }
-  };
-
-  const saveFavoritosStorage = async (favoritos: string[]) => {
-    await AsyncStorage.setItem("favoritos", JSON.stringify(favoritos));
-  };
-
   const fetchImages = async () => {
     setLoading(true);
     try {
       const token = authState?.token;
-      const result = await Axios.get("/images/favorites", {
+      const result = await Axios.get("/images/favorite", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const favoritosIds = await getFavoritosStorage();
       const imageList = result.data.images;
 
+      console.log(imageList)   
       const imagesWithUrls = imageList.map((img: any) => {
         const data = new Date(img.created_at);
         const dataFormatada = data.toLocaleDateString("pt-BR");
-
+      
         return {
           id: img.Id,
           uri: img.stored_filepath.startsWith("http")
@@ -60,9 +41,8 @@ export function useImagesServices() {
             : `${API_URL}${img.stored_filepath}`,
           filename: img.original_filename,
           dataFormatada,
-          favorito: favoritosIds.includes(img.Id),
         };
-      });
+      });         
 
       setImages(imagesWithUrls);
     } catch (e: any) {
@@ -73,55 +53,81 @@ export function useImagesServices() {
     }
   };
 
-  const toggleFavorite = async (imageId: string) => {
-    try {
-      const token = authState?.token;
-      const favoritos = await getFavoritosStorage();
-      let updated: string[];
-      const isFavorito = favoritos.includes(imageId);
-  
-      if (isFavorito) {
-        updated = favoritos.filter(id => id !== imageId);
-        // Chamada para remover dos favoritos no backend
-        await Axios.delete(`/images/favorite/${imageId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-      } else {
-        updated = [...favoritos, imageId];
-        // Chamada para adicionar aos favoritos no backend
-        await Axios.post(
-          `/images/favorite/${imageId}`,
-          {},
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-      }
-  
-      await saveFavoritosStorage(updated);
-  
-      // Atualiza localmente
-      setImages(prev =>
-        prev.map(img =>
-          img.id === imageId ? { ...img, favorito: !img.favorito } : img
-        )
-      );
-    } catch (e: any) {
-      console.warn("Erro ao alterar favorito:", e?.response?.data?.msg || e.message);
-      Alert.alert("Erro", "Não foi possível alterar o favorito.");
-    }
-  };  
-
-  const openModal = (index: number) => {
-    setSelectedImageIndex(index);
-    setModalVisible(true);
-  };
-
   useEffect(() => {
     if (authState?.authenticated) {
       fetchImages();
     }
   }, [authState?.authenticated]);
+
+  const handleDelete = (deleteImage: ImageType) => {
+    Alert.alert(
+      "Excluir imagem",
+      "Tem certeza que deseja excluir esta imagem?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "OK",
+          onPress: async () => {
+            try {
+              const token = authState?.token;
+  
+              await Axios.delete(`/images/${deleteImage.id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+              });
+  
+              const updatedImages = images.filter(image => image.id !== deleteImage.id);
+              setImages(updatedImages);
+              Alert.alert("Sucesso", "Imagem excluída com sucesso.");
+              setModalVisible(false);
+              await fetchImages();
+            } catch (e: any) {
+              console.warn("Erro ao excluir imagem:", e?.response?.data?.msg || e.message);
+              Alert.alert("Erro", "Não foi possível excluir a imagem.");
+            }
+          },
+        },
+      ],
+      { cancelable: false }
+    );
+  };  
+
+  const handleImageSave = async () => {
+    if (selectedImageIndex === null) return;
+
+    const { status } = await MediaLibrary.requestPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permissão negada", "Você precisa permitir acesso à galeria.");
+      return;
+    }
+
+    try {
+      const uri = images[selectedImageIndex].uri;
+      const filename = uri.split("/").pop() || `image_${Date.now()}.jpg`;
+      const fileUri = FileSystem.documentDirectory + filename;
+
+      const downloadResult = await FileSystem.downloadAsync(uri, fileUri);
+      await MediaLibrary.saveToLibraryAsync(downloadResult.uri);
+
+      Alert.alert("Sucesso", "Imagem salva na galeria!");
+    } catch (error) {
+      console.error("Erro ao salvar imagem:", error);
+      Alert.alert("Erro", "Não foi possível salvar a imagem.");
+    }
+
+    setModalVisible(false);
+  };
+
+  const handleImageEdit = () => {
+    if (selectedImageIndex !== null) {
+      console.log("Editar imagem com índice:", selectedImageIndex);
+      setModalVisible(false);
+    }
+  };
+
+  const openModal = (index: number) => {
+    setSelectedImageIndex(index);
+    setModalVisible(true);
+  };
 
   return {
     images,
@@ -129,7 +135,9 @@ export function useImagesServices() {
     modalVisible,
     selectedImageIndex,
     openModal,
+    handleImageEdit,
+    handleDelete,
+    handleImageSave,
     setModalVisible,
-    toggleFavorite, // exporta aqui
   };
 }

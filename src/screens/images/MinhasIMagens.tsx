@@ -43,6 +43,7 @@ export function ImageGallery() {
     handleImageEdit,
     handleDelete,
     handleImageSave,
+    handleFavorite,
     setModalVisible,
   } = useImagesServices();
 
@@ -127,7 +128,7 @@ export function ImageGallery() {
                     <Text style={tw`text-white text-xs`}>Download</Text>
                   </TouchableOpacity>
 
-                  <TouchableOpacity style={tw`items-center`} onPress={() => {}}>
+                  <TouchableOpacity style={tw`items-center`} onPress={() => handleFavorite()}>
                     <Star color="#62748E" size={28} />
                     <Text style={tw`text-white text-xs`}>Favoritar</Text>
                   </TouchableOpacity>

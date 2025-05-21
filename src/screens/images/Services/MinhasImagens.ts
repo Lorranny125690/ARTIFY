@@ -9,7 +9,7 @@ import * as MediaLibrary from "expo-media-library";
 import * as FileSystem from "expo-file-system";
 
 export type ImageType = {
-  id: string; uri: string, filename: string, dataFormatada: string 
+  id: string; uri: string, filename: string, dataFormatada: string, user_favorite: boolean,
 };
 
 export function useImagesServices() {
@@ -41,6 +41,7 @@ export function useImagesServices() {
             : `${API_URL}${img.stored_filepath}`,
           filename: img.original_filename,
           dataFormatada,
+          user_favorite: img.user_favorite ?? false,
         };
       });         
 
@@ -124,6 +125,39 @@ export function useImagesServices() {
     }
   };
 
+  const handleFavorite = async () => {
+    try {
+      if (selectedImageIndex === null) return;
+  
+      const image = images[selectedImageIndex];
+      const isFavorite = image?.user_favorite;
+
+      const token = authState?.token;
+      await Axios.put(
+        "/images",
+        {
+          imageId: image.id,
+          user_favorite: !isFavorite,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      Alert.alert("Sucesso", isFavorite ? "Imagem favoritada!" : "Imagem desmarcada como favorita.");
+  
+      const updatedImages = images.map((img) =>
+        img.id === image.id ? { ...img, user_favorite: isFavorite } : img
+      );
+      setImages(updatedImages);
+    } catch (error: any) {
+      console.error("Erro ao favoritar/desfavoritar imagem:", error?.response?.data?.msg || error.message);
+      Alert.alert("Erro", "Não foi possível atualizar a imagem.");
+    }
+  };
+
   const openModal = (index: number) => {
     setSelectedImageIndex(index);
     setModalVisible(true);
@@ -138,6 +172,7 @@ export function useImagesServices() {
     handleImageEdit,
     handleDelete,
     handleImageSave,
+    handleFavorite,
     setModalVisible,
   };
 }
