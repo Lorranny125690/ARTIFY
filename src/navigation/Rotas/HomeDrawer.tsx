@@ -4,6 +4,7 @@ import { Sidebar } from "../../components/sidebar";
 import { HomeScreen } from "../../screens/Home";
 import { ImageGallery } from "../../screens/images/MinhasImagens";
 import { Ferramentas } from "../../screens/tools/Ferramentas";
+import { UserProfile } from "../../screens/user/Profile"
 
 const Drawer = createDrawerNavigator();
 
@@ -20,6 +21,7 @@ export function HomeDrawer() {
       <Drawer.Screen name="Home" component={HomeScreen} />
       <Drawer.Screen name="SaveImages" component={ImageGallery} />
       <Drawer.Screen name="Ferramentas" component={Ferramentas} />
+      <Drawer.Screen name="Profile" component={UserProfile}/>
     </Drawer.Navigator>
   );
 }

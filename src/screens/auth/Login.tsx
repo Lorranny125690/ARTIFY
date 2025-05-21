@@ -15,72 +15,80 @@ import tw from "twrnc";
 import { RootStackParamList } from "../../types/rootStackParamList";
 import { useAuth } from "../../contexts/AuthContext/authenticatedUser";
 import Login from "./Services/Login";
+import { CustomModal } from "./Modal";
 
 export const LoginScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { onLogin, onRegister } = useAuth();
-
-  useEffect(() => {
-    Login(); 
-  }, []);
+  const [pressed, setPressed] = useState<boolean>(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalMsg, setModalMsg] = useState("");
 
   const login = async () => {
+    setPressed(true)
     const result = await onLogin!(email, password);
 
-    if (!result && result.error) {
-      alert(result.msg);
-    }3
-
-    if (!email || !password) {
-      alert("Preencha todos os campos!");
+    if (!result || result.error) {
+      if (result?.statusCode === 404) {
+        setModalMsg("Erro ao tentar logar. Tente novamente.");
+        setModalVisible(true);
+        return;
+      }
+  
+      setModalMsg("Email ou senha errados 😯! Digite novamente.");
+      setModalVisible(true);
       return;
     }
   };
 
   return (
-    <ScrollView contentContainerStyle={tw`flex-1 bg-slate-900 items-center justify-center`}>
+    <ScrollView contentContainerStyle={tw`flex-1 bg-slate-900 items-center justify-center p-4`}>
       <TouchableOpacity
         onPress={() => navigation.navigate("Welcome")}
         style={tw`absolute top-12 left-4 z-50`}
       >
         <ArrowLeft color="white" size={28} />
       </TouchableOpacity>
-
+  
       <Image
         source={require("../../assets/iconArtify.png")}
-        style={tw`w-80 h-80`}
+        style={tw`w-80 h-80 mb-4`}
         resizeMode="contain"
       />
-
-      <TextInput
-        placeholder="Email"
-        placeholderTextColor="#B0B0B0"
-        style={tw`bg-slate-800 w-full max-w-[300px] mb-8 p-3 rounded-lg text-white`}
-        onChangeText={(text: string) => setEmail(text)}
-        value={email}
-      />
-      if (!email) {
-        <Text style={tw`text-red-500 mb-1`}>Esse campo é obrigatório</Text>
-      }
-
-      <TextInput
-        placeholder="Senha"
-        placeholderTextColor="#B0B0B0"
-        secureTextEntry
-        style={tw`bg-slate-800 w-full max-w-[300px] mb-4 p-3 rounded-lg text-white`}
-        onChangeText={(text: string) => setPassword(text)}
-        value={password}
-      />
-      if (!password) {
-        <Text style={tw`text-red-500 mb-1`}>Esse campo é obrigatório</Text>
-      }
-
+  
+      <View style={tw`w-full max-w-[300px] mb-8`}>
+        <TextInput
+          placeholder="Email"
+          placeholderTextColor="#B0B0B0"
+          style={tw`bg-slate-800 p-3 rounded-lg text-white`}
+          onChangeText={(text: string) => setEmail(text)}
+          value={email}
+        />
+        {!email && pressed && (
+          <Text style={tw`text-red-500 mt-1`}>Esse campo é obrigatório</Text>
+        )}
+      </View>
+  
+      <View style={tw`w-full max-w-[300px] mb-4`}>
+        <TextInput
+          placeholder="Senha"
+          placeholderTextColor="#B0B0B0"
+          secureTextEntry
+          style={tw`bg-slate-800 p-3 rounded-lg text-white`}
+          onChangeText={(text: string) => setPassword(text)}
+          value={password}
+        />
+        {!password && pressed && (
+          <Text style={tw`text-red-500 mt-1`}>Esse campo é obrigatório</Text>
+        )}
+      </View>
+  
       <TouchableOpacity onPress={() => navigation.navigate("Email")}>
         <Text style={tw`text-gray-300 mb-12`}>Esqueceu a senha?</Text>
       </TouchableOpacity>
-
+  
       <TouchableOpacity
         style={tw`bg-slate-800 py-2 px-10 rounded-lg mb-4 w-45 h-12 justify-center items-center`}
         onPress={login}
@@ -88,6 +96,12 @@ export const LoginScreen = () => {
         <Text style={tw`text-white text-lg font-semibold`}>Login</Text>
       </TouchableOpacity>
 
+      <CustomModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        message={modalMsg}
+      />
+  
       <View style={tw`flex-row`}>
         <Text style={tw`text-white`}>Ainda não tem uma conta? </Text>
         <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
@@ -96,4 +110,4 @@ export const LoginScreen = () => {
       </View>
     </ScrollView>
   );
-};
+}

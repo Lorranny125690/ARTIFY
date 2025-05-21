@@ -7,5 +7,7 @@ export type RootStackParamList = {
   Email: undefined;
   Auth: undefined,
   Photo: { imageUri: string };
-  SaveImages: { imageId: string }
+  SaveImages: { imageId: string };
+  Profile: undefined;
+  Favoritos: undefined;
 };

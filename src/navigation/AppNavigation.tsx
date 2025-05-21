@@ -5,6 +5,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { WelcomeScreen } from "../screens/welcome";
 import { AuthStack } from "./Rotas/AuthStack";
 import { HomeDrawer } from "./Rotas/HomeDrawer";
+import { Favoritos } from "../screens/user/Favorites";
 import { ImagePreviewScreen } from "../screens/tools/functions/Preview";
 import type { RootStackParamList } from "../types/rootStackParamList";
 import { useAuth } from "../contexts/AuthContext/authenticatedUser";
@@ -38,6 +39,7 @@ export function RootNavigator() {
         <>
           <Stack.Screen name="Home" component={HomeDrawer} />
           <Stack.Screen name="Photo" component={ImagePreviewScreen} />
+          <Stack.Screen name="Favoritos" component={Favoritos}/>
         </>
       ) : (
         <Stack.Screen name="Auth" component={AuthStack} />
