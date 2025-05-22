@@ -19,7 +19,7 @@ export const uploadImage = async (
       throw new Error("ImageUri is null")
     }
         
-    formData.append("images", {
+    formData.append("file", {
         uri: imageUri,
         type: "image/jpeg",
         name: "foto.jpg"

@@ -7,7 +7,7 @@
     "strict": true,
     "skipLibCheck": true,
     "outDir": "./dist",
-    "esModuleInterop":true
+    "esModuleInterop":true,    
   },
   "extends": "expo/tsconfig.base"
 }
