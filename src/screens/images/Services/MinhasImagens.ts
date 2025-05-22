@@ -127,14 +127,15 @@ export function useImagesServices() {
       if (selectedImageIndex === null) return;
   
       const image = images[selectedImageIndex];
-      const isFavorite = image?.user_favorite;
-
+      const isCurrentlyFavorite = image?.user_favorite;
+      const newFavoriteStatus = !isCurrentlyFavorite;
+  
       const token = authState?.token;
       await Axios.put(
         "/images",
         {
           imageId: image.id,
-          user_favorite: !isFavorite,
+          user_favorite: newFavoriteStatus,
         },
         {
           headers: {
@@ -143,17 +144,20 @@ export function useImagesServices() {
         }
       );
   
-      Alert.alert("Sucesso", isFavorite ? "Imagem favoritada!" : "Imagem desmarcada como favorita.");
+      Alert.alert(
+        "Sucesso",
+        newFavoriteStatus ? "Imagem favoritada!" : "Imagem desmarcada como favorita."
+      );
   
       const updatedImages = images.map((img) =>
-        img.id === image.id ? { ...img, user_favorite: isFavorite } : img
+        img.id === image.id ? { ...img, user_favorite: newFavoriteStatus } : img
       );
       setImages(updatedImages);
     } catch (error: any) {
       console.error("Erro ao favoritar/desfavoritar imagem:", error?.response?.data?.msg || error.message);
       Alert.alert("Erro", "Não foi possível atualizar a imagem.");
     }
-  };
+  };  
 
   const openModal = (index: number) => {
     setSelectedImageIndex(index);

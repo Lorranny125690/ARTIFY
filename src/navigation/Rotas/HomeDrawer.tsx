@@ -4,7 +4,7 @@ import { Sidebar } from "../../components/sidebar";
 import { HomeScreen } from "../../screens/Home";
 import { Ferramentas } from "../../screens/tools/Ferramentas";
 import { UserProfile } from "../../screens/user/Profile"
-import { ImageGallery } from "../../screens/images/MinhasIMagens";
+import { ImageGallery } from "../../screens/images/MinhasImagens";
 
 const Drawer = createDrawerNavigator();
 

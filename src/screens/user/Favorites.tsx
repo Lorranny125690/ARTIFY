@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import tw from "twrnc";
 import Icon from "react-native-vector-icons/FontAwesome";
+import AntDesign from "react-native-vector-icons/AntDesign";
 import { DrawerNavigationProp } from "@react-navigation/drawer";
 import { useNavigation } from "@react-navigation/native";
 import { Favoritos } from "./Services/Favorites";
@@ -48,14 +49,14 @@ export function Favorito() {
   return (
     <View style={tw`flex-1 bg-slate-900`}>
       {/* Header */}
-      <View style={tw`mb-2 bg-slate-800 flex-row justify-between items-center py-2 px-4`}>
-        <Image source={require("../../assets/iconArtify.png")} style={tw`w-20 h-9`} />
-        <TouchableOpacity onPress={() => navigation.openDrawer()}>
-          <Icon name="bars" size={24} color="#fff" />
+      <View style={tw`items-center gap-2 flex-row m-2 py-2 px-2`}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <AntDesign name="left" size={24} color="#fff" />
         </TouchableOpacity>
+        <Text style={tw`text-white text-xl`}>Favoritos</Text>
       </View>
 
-      <Text style={tw`text-white text-xl ml-5 mb-7 mt-2`}>Imagens favoritas</Text>
+      <Text style={tw`text-white text-xl mt-6 ml-3 mb-4`}>Imagens Favoritas</Text>
 
       {loading ? (
         <View style={tw`flex-1 justify-center items-center`}>
