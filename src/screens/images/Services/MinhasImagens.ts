@@ -1,6 +1,3 @@
-import type { DrawerNavigationProp } from "@react-navigation/drawer";
-import { useNavigation } from "@react-navigation/native";
-import type { RootStackParamList } from "../../../types/rootStackParamList";
 import { useEffect, useState } from "react";
 import { API_URL, useAuth } from "../../../contexts/AuthContext/authenticatedUser";
 import Axios from "../../../scripts/axios";
