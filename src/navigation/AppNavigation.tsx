@@ -6,7 +6,7 @@ import { WelcomeScreen } from "../screens/welcome";
 import { AuthStack } from "./Rotas/AuthStack";
 import { HomeDrawer } from "./Rotas/HomeDrawer";
 import { Favorito } from "../screens/user/Favorites";
-import { ImagePreviewScreen } from "../screens/tools/functions/Preview";
+import { ImagePreviewScreen } from "../screens/tools/functions/preview/Preview";
 import type { RootStackParamList } from "../types/rootStackParamList";
 import { useAuth } from "../contexts/AuthContext/authenticatedUser";
 

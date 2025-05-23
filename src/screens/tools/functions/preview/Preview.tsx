@@ -12,11 +12,11 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import * as MediaLibrary from "expo-media-library";
 import * as FileSystem from "expo-file-system";
 import Icon from "react-native-vector-icons/FontAwesome";
-import Axios from "../../../scripts/axios";
-import { API_URL, useAuth } from "../../../contexts/AuthContext/authenticatedUser";
-import { RootStackParamList } from "../../../types/rootStackParamList";
+import Axios from "../../../../scripts/axios";
+import { API_URL, useAuth } from "../../../../contexts/AuthContext/authenticatedUser";
+import { RootStackParamList } from "../../../../types/rootStackParamList";
 import type { StackNavigationProp } from "@react-navigation/stack";
-import type { ImageType } from "../../images/Services/MinhasImagens";
+import type { ImageType } from "../../../images/Services/MinhasImagens";
 import { uploadImage } from "./Imagem";
 
 export const ImagePreviewScreen = () => {

@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
-import { API_URL, useAuth } from "../../../contexts/AuthContext/authenticatedUser";
 import Axios from "../../../scripts/axios";
 import { Alert } from "react-native";
 import * as MediaLibrary from "expo-media-library";
 import * as FileSystem from "expo-file-system";
+import { API_URL, useAuth } from "../../../contexts/AuthContext/authenticatedUser";
 
 export type ImageType = {
-  id: string; uri: string, filename: string, dataFormatada: string, user_favorite: boolean,
+  id: string;
+  uri: string;
+  filename: string;
+  dataFormatada: string;
+  user_favorite: boolean;
 };
 
 export function useImagesServices() {
@@ -20,28 +24,28 @@ export function useImagesServices() {
     setLoading(true);
     try {
       const token = authState?.token;
+  
       const result = await Axios.get("/images", {
         headers: { Authorization: `Bearer ${token}` },
       });
-
-      const imageList = result.data.images;
-
-      console.log(imageList)   
-      const imagesWithUrls = imageList.map((img: any) => {
-        const data = new Date(img.created_at);
+  
+      const simplifiedList = result.data.simplified;
+  
+      const imagesWithUrls: ImageType[] = simplifiedList.map((img: any) => {
+        const data = img.date ? new Date(img.date) : new Date();
         const dataFormatada = data.toLocaleDateString("pt-BR");
-      
+  
         return {
-          id: img.Id,
-          uri: img.stored_filepath.startsWith("http")
-            ? img.stored_filepath
-            : `${API_URL}${img.stored_filepath}`,
-          filename: img.original_filename,
+          id: img.id,
+          uri: img.public_url.startsWith("http")
+            ? img.public_url
+            : `${API_URL}${img.public_url}`,
+          filename: "",
           dataFormatada,
-          user_favorite: img.user_favorite ?? false,
+          user_favorite: img.favorite,
         };
-      });         
-
+      });
+  
       setImages(imagesWithUrls);
     } catch (e: any) {
       console.warn("Erro ao buscar imagens:", e?.response?.data?.msg || e.message);
@@ -49,7 +53,7 @@ export function useImagesServices() {
     } finally {
       setLoading(false);
     }
-  };
+  };  
 
   useEffect(() => {
     if (authState?.authenticated) {
@@ -148,6 +152,8 @@ export function useImagesServices() {
         "Sucesso",
         newFavoriteStatus ? "Imagem favoritada!" : "Imagem desmarcada como favorita."
       );
+
+      console.log(newFavoriteStatus)
   
       const updatedImages = images.map((img) =>
         img.id === image.id ? { ...img, user_favorite: newFavoriteStatus } : img
@@ -157,7 +163,7 @@ export function useImagesServices() {
       console.error("Erro ao favoritar/desfavoritar imagem:", error?.response?.data?.msg || error.message);
       Alert.alert("Erro", "Não foi possível atualizar a imagem.");
     }
-  };  
+  };
 
   const openModal = (index: number) => {
     setSelectedImageIndex(index);

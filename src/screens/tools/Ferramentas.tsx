@@ -19,6 +19,12 @@ import { openGallery } from "./functions/OpenGallery";
 import { RecentProcessedImages } from "./functions/recentProcess";
 import { Images } from "../../types/entitys/images";
 import { Camera } from "lucide-react-native";
+import Animated, {
+  FadeInUp,
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+} from "react-native-reanimated";
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -135,7 +141,10 @@ const Section: React.FC<{
         showsHorizontalScrollIndicator={false}
       />
 
-      <Modal visible={modalVisible} transparent animationType="fade">
+        <Animated.View
+            entering={FadeInUp.delay(100).duration(500)}
+        >
+        <Modal visible={modalVisible} transparent animationType="fade">
         <TouchableOpacity
           style={tw`flex-1 items-center justify-center bg-black bg-opacity-50`}
           activeOpacity={1}
@@ -149,7 +158,7 @@ const Section: React.FC<{
             <View style={tw`flex-row justify-around mb-4`}>
               <TouchableOpacity
                 onPress={cameraHandle}
-                style={tw`bg-sky-500 flex-column px-4 py-3 rounded-lg items-center gap-2`}
+                style={tw`bg-sky-500 px-4 py-3 rounded-lg items-center gap-2`}
               >
                 <Camera color="white" size={40} />
                 <Text style={tw`text-white font-semibold`}>Câmera</Text>
@@ -172,6 +181,7 @@ const Section: React.FC<{
           </View>
         </TouchableOpacity>
       </Modal>
+      </Animated.View>
 
       {imageUri && (
         <Image

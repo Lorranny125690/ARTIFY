@@ -1,5 +1,5 @@
 import { Alert } from "react-native";
-import { API_URL } from "../../../contexts/AuthContext/authenticatedUser";
+import { API_URL } from "../../../../contexts/AuthContext/authenticatedUser";
 
 interface formDataUpload{
   uri: string,
