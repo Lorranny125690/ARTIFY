@@ -22,52 +22,46 @@ export function useFavoritos() {
     try {
       const token = authState?.token;
   
-      const result = await Axios.get("/images/favorite", {
+      const result = await Axios.get("/images", {
         headers: { Authorization: `Bearer ${token}` },
       });
   
-      const imageList = result.data?.images?.images;
+      const simplifiedList = result.data.simplified;
   
-      if (!Array.isArray(imageList)) {
-        console.warn("Resposta inesperada da API: images não é uma lista", result.data);
-        setImages([]);
-        return;
-      }
-  
-      const formattedImages = imageList.map((img: any) => {
-        const data = new Date(img.created_at);
+      const imagesWithUrls: ImageType[] = simplifiedList.map((img: any) => {
+        const data = img.date ? new Date(img.date) : new Date();
         const dataFormatada = data.toLocaleDateString("pt-BR");
   
         return {
-          id: img.Id,
-          uri: img.stored_filepath?.startsWith("http")
-            ? img.stored_filepath
-            : `${API_URL}${img.stored_filepath}`,
-          filename: img.original_filename || "",
+          id: img.id,
+          uri: img.public_url.startsWith("http")
+            ? img.public_url
+            : `${API_URL}${img.public_url}`,
+          filename: "",
           dataFormatada,
+          user_favorite: img.favorite,
         };
       });
   
-      setImages(formattedImages);
+      setImages(imagesWithUrls);
     } catch (e: any) {
       console.warn("Erro ao buscar imagens:", e?.response?.data?.msg || e.message);
       Alert.alert("Erro", "Não foi possível carregar as imagens.");
-      setImages([]);
     } finally {
       setLoading(false);
     }
   };  
 
-  const openModal = (index: number) => {
-    setSelectedImageIndex(index);
-    setModalVisible(true);
-  };
-
   useEffect(() => {
     if (authState?.authenticated) {
       fetchImages();
     }
-  }, [authState?.authenticated]);
+  }, [authState?.authenticated]); 
+
+  const openModal = (index: number) => {
+    setSelectedImageIndex(index);
+    setModalVisible(true);
+  };
 
   return {
     images,

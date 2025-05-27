@@ -163,6 +163,8 @@ export function useImagesServices() {
       console.error("Erro ao favoritar/desfavoritar imagem:", error?.response?.data?.msg || error.message);
       Alert.alert("Erro", "Não foi possível atualizar a imagem.");
     }
+
+    setModalVisible(false)
   };
 
   const openModal = (index: number) => {

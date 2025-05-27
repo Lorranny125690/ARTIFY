@@ -16,7 +16,7 @@ import { DrawerNavigationProp } from "@react-navigation/drawer";
 import { useNavigation } from "@react-navigation/native";
 import { useImagesServices } from "./Services/MinhasImagens";
 import type { RootStackParamList } from "../../types/rootStackParamList";
-import { Star } from "lucide-react-native";
+import { Star, StarOff } from "lucide-react-native";
 
 function FallbackImage(props: ImageProps) {
   const [error, setError] = useState(false);
@@ -129,9 +129,14 @@ export function ImageGallery() {
                   </TouchableOpacity>
 
                   <TouchableOpacity style={tw`items-center`} onPress={() => handleFavorite()}>
-                    <Star color="#62748E" size={28} />
-                    <Text style={tw`text-white text-xs`}>Favoritar</Text>
-                  </TouchableOpacity>
+  {images[selectedImageIndex]?.user_favorite ? (
+    <Star color="#62748E" size={28} />
+  ) : (
+    <StarOff color="#62748E" size={28} />
+  )}
+  <Text style={tw`text-white text-xs`}>Favoritar</Text>
+</TouchableOpacity>
+
                 </View>
               </View>
             </View>

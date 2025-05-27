@@ -31,11 +31,11 @@ export const uploadImage = async (
           Authorization: `Bearer ${token}`,
         },
         body: formData
-});
+    });
 
-const resText = await response.text();
-console.log("Status:", response.status);
-console.log("Resposta do backend:", resText);
+    const resText = await response.text();
+    console.log("Status:", response.status);
+    console.log("Resposta do backend:", resText);
     onSuccess();
   } catch (error) {
     console.error("Erro ao fazer upload: ", error);
