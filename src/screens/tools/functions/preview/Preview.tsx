@@ -41,7 +41,7 @@ export const ImagePreviewScreen = () => {
       console.log("Upload feito");
     });
   
-    Alert.alert("Chamou!", "Upload acionado.");
+    Alert.alert("Imagem guardada em Minhas Imagens com sucesso!");
   };  
 
   const handleDownload = async () => {

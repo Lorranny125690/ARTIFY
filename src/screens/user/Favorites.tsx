@@ -17,7 +17,6 @@ import { DrawerNavigationProp } from "@react-navigation/drawer";
 import { useNavigation } from "@react-navigation/native";
 import type { RootStackParamList } from "../../types/rootStackParamList";
 import { useFavoritos } from "./Services/Favorites";
-// Substitua esse import se não estiver usando corretamente o lucide-react-native
 import { Star } from "lucide-react-native";
 
 function FallbackImage(props: ImageProps) {

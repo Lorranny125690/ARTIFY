@@ -1,5 +1,6 @@
 import { Alert } from "react-native";
 import { API_URL } from "../../../../contexts/AuthContext/authenticatedUser";
+import { useImagesServices } from "../../../images/Services/MinhasImagens";
 
 interface formDataUpload{
   uri: string,
@@ -37,6 +38,7 @@ export const uploadImage = async (
     console.log("Status:", response.status);
     console.log("Resposta do backend:", resText);
     onSuccess();
+    
   } catch (error) {
     console.error("Erro ao fazer upload: ", error);
     Alert.alert("Erro", "Não foi possível fazer o upload da imagem.");

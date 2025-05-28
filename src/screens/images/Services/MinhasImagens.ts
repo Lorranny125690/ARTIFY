@@ -40,7 +40,7 @@ export function useImagesServices() {
           uri: img.public_url.startsWith("http")
             ? img.public_url
             : `${API_URL}${img.public_url}`,
-          filename: "",
+          filename: img.filename,
           dataFormatada,
           user_favorite: img.favorite,
         };
@@ -167,13 +167,49 @@ export function useImagesServices() {
     setModalVisible(false)
   };
 
-  const openModal = (index: number) => {
-    setSelectedImageIndex(index);
-    setModalVisible(true);
-  };
+  const fetchFavorites = async () => {
+      setLoading(true);
+      try {
+        const token = authState?.token;
+    
+        const result = await Axios.get("/images", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+    
+        const simplifiedList = result.data.simplified;
+    
+        const imagesWithUrls: ImageType[] = simplifiedList.map((img: any) => {
+          const data = img.date ? new Date(img.date) : new Date();
+          const dataFormatada = data.toLocaleDateString("pt-BR");
+    
+          return {
+            id: img.id,
+            uri: img.public_url.startsWith("http")
+              ? img.public_url
+              : `${API_URL}${img.public_url}`,
+            filename: "",
+            dataFormatada,
+            user_favorite: img.favorite,
+          };
+        });
+    
+        setImages(imagesWithUrls);
+      } catch (e: any) {
+        console.warn("Erro ao buscar imagens:", e?.response?.data?.msg || e.message);
+        Alert.alert("Erro", "Não foi possível carregar as imagens.");
+      } finally {
+        setLoading(false);
+      }
+    };  
+  
+    const openModal = (index: number) => {
+      setSelectedImageIndex(index);
+      setModalVisible(true);
+    };
 
   return {
     images,
+    fetchImages,
     loading,
     modalVisible,
     selectedImageIndex,
@@ -183,5 +219,6 @@ export function useImagesServices() {
     handleImageSave,
     handleFavorite,
     setModalVisible,
+    fetchFavorites
   };
 }

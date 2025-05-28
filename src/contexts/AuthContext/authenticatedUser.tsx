@@ -33,11 +33,11 @@ export const AuthProvider = ({children}: any) => {
         const loadToken = async () => {
             const token = await SecureStore.getItemAsync("my-jwt")
             console.log("file: AuthContext.tsx:32 ~loadToken ~token:", token);
+            
             if (token) {
                 axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
                 setAuthState({
-                    token: token,
+                    token,
                     authenticated: true
                 })
             }
