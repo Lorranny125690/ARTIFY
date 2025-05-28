@@ -38,8 +38,7 @@ function FallbackImage(props: ImageProps) {
 }
 
 export function Favorito() {
-  const navigation =
-    useNavigation<DrawerNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<DrawerNavigationProp<RootStackParamList>>();
   const {
     images,
     loading,

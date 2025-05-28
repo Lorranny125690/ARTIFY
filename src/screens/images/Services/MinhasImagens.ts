@@ -77,7 +77,6 @@ export function useImagesServices() {
                 headers: { Authorization: `Bearer ${token}` },
               });
   
-              // Atualiza a lista local
               const updatedImages = images.filter(image => image.id !== deleteImage.id);
               setImages(updatedImages);
               Alert.alert("Sucesso", "Imagem excluída com sucesso.");
@@ -167,45 +166,56 @@ export function useImagesServices() {
     setModalVisible(false)
   };
 
-  const fetchFavorites = async () => {
-      setLoading(true);
-      try {
-        const token = authState?.token;
-    
-        const result = await Axios.get("/images", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-    
-        const simplifiedList = result.data.simplified;
-    
-        const imagesWithUrls: ImageType[] = simplifiedList.map((img: any) => {
-          const data = img.date ? new Date(img.date) : new Date();
-          const dataFormatada = data.toLocaleDateString("pt-BR");
-    
-          return {
-            id: img.id,
-            uri: img.public_url.startsWith("http")
-              ? img.public_url
-              : `${API_URL}${img.public_url}`,
-            filename: "",
-            dataFormatada,
-            user_favorite: img.favorite,
-          };
-        });
-    
-        setImages(imagesWithUrls);
-      } catch (e: any) {
-        console.warn("Erro ao buscar imagens:", e?.response?.data?.msg || e.message);
-        Alert.alert("Erro", "Não foi possível carregar as imagens.");
-      } finally {
-        setLoading(false);
-      }
-    };  
+  interface formDataUpload{
+    uri: string,
+    name: string,
+    type: string,
+  }
   
-    const openModal = (index: number) => {
-      setSelectedImageIndex(index);
-      setModalVisible(true);
-    };
+  const uploadImage = async (
+    imageUri: string,
+    token: string,
+    onSuccess: () => void
+  ) => {
+    try {
+      alert("Fazendo upload de uma imagem")
+      const formData = new FormData();
+      if(!imageUri){
+        throw new Error("ImageUri is null")
+      }
+          
+      formData.append("file", {
+          uri: imageUri,
+          type: "image/jpeg",
+          name: "foto.jpg"
+        } as any);
+  
+        const response = await fetch(`${API_URL}/images`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData
+      });
+  
+      const resText = await response.text();
+      const clonedResponse = response.clone();
+      console.log("Status:", response.status);
+      console.log("Resposta do backend:", resText);
+      // const json = await response.json(); 
+      // setImages((prev) => [...prev, json]);
+      
+      onSuccess();
+    } catch (error) {
+      console.error("Erro ao fazer upload: ", error);
+      Alert.alert("Erro", "Não foi possível fazer o upload da imagem.");
+    }
+  }
+
+  const openModal = (index: number) => {
+    setSelectedImageIndex(index);
+    setModalVisible(true);
+  };
 
   return {
     images,
@@ -219,6 +229,6 @@ export function useImagesServices() {
     handleImageSave,
     handleFavorite,
     setModalVisible,
-    fetchFavorites
+    uploadImage
   };
 }

@@ -17,7 +17,7 @@ import { API_URL, useAuth } from "../../../../contexts/AuthContext/authenticated
 import { RootStackParamList } from "../../../../types/rootStackParamList";
 import type { StackNavigationProp } from "@react-navigation/stack";
 import type { ImageType } from "../../../images/Services/MinhasImagens";
-import { uploadImage } from "./Imagem";
+import { useImagesServices } from "../../../images/Services/MinhasImagens";
 
 export const ImagePreviewScreen = () => {
   const [images, setImages] = useState<ImageType[]>([]);
@@ -25,6 +25,8 @@ export const ImagePreviewScreen = () => {
   const { authState } = useAuth();
   const route = useRoute();
   const { imageUri } = route.params as { imageUri: string };
+
+  const { uploadImage } = useImagesServices();
 
   const handleSave = () => {
     console.log("handleSave foi chamado");
