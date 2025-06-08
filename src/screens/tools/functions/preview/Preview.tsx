@@ -29,21 +29,26 @@ export const ImagePreviewScreen = () => {
 
   const { uploadImage } = useImagesContext();
 
-  const handleSave = async() => {
+  const handleSave = async () => {
     console.log("handleSave foi chamado");
     console.log("authState?.token:", authState?.token);
-    console.log("imageId:", imageUri);
+    console.log("imageUri:", imageUri);
     console.log("ROUTE PARAMS:", route.params);
   
     if (!authState?.token || !imageUri) {
-      Alert.alert("Erro", "Token ou imageId ausente.");
+      Alert.alert("Erro", "Token ou imagem ausente.");
       return;
     }
-
-    await uploadImage(imageUri);
   
-    Alert.alert("Imagem guardada com sucesso!");
-  };  
+    try {
+      await uploadImage(imageUri);
+      Alert.alert("Sucesso", "Imagem guardada em Minhas Imagens com sucesso!");
+      navigation.goBack();
+    } catch (error) {
+      console.error("Erro ao guardar imagem:", error);
+      Alert.alert("Erro", "Não foi possível guardar a imagem.");
+    }
+  };   
 
   const handleDownload = async () => {
     const { status } = await MediaLibrary.requestPermissionsAsync();

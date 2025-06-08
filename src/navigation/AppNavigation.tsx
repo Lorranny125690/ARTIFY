@@ -10,6 +10,7 @@ import { ImagePreviewScreen } from "../screens/tools/functions/preview/Preview";
 import type { RootStackParamList } from "../types/rootStackParamList";
 import { useAuth } from "../contexts/AuthContext/authenticatedUser";
 import { ImagesProvider } from "../contexts/ImageContext/imageContext";
+import { FilterProvider } from "../screens/tools/functions/Filters";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -17,7 +18,7 @@ export function RootNavigator() {
   const { authState, onLogout } = useAuth();
   
   return (
-    <ImagesProvider><Stack.Navigator
+    <ImagesProvider><FilterProvider><Stack.Navigator
       screenOptions={{
         headerShown: false,
         animation: 'fade',
@@ -46,6 +47,7 @@ export function RootNavigator() {
         <Stack.Screen name="Auth" component={AuthStack} />
       )}
     </Stack.Navigator>
+    </FilterProvider>
   </ImagesProvider>
   );
 }

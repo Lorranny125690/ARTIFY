@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   ScrollView,
   Modal,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { DrawerNavigationProp } from "@react-navigation/drawer";
@@ -26,6 +28,8 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { useAuth } from "../../contexts/AuthContext/authenticatedUser";
+import Axios from "../../scripts/axios";
+import { useImagesContext } from "../../contexts/ImageContext/imageContext";
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -83,43 +87,53 @@ const detecaoRealceSection: { title: string; data: Item[] } = {
   ],
 };
 
-const Section: React.FC<{
-  title: string;
-  data: Item[];
-  wide?: boolean;
-  center?: boolean;
-}> = ({ title, data, wide = false, center = false }) => {
-  const [selectedTool, setSelectedTool] = useState<Item | null>(null);
+const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => {
+  const { authState } = useAuth();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const token = authState?.token;
+  const { uploadImage, images, applyFilterToImage, selectedFilter, setSelectedFilter } = useImagesContext();
+
   const [modalVisible, setModalVisible] = useState(false);
+  const [selectedTool, setSelectedTool] = useState<Item | null>(null);
   const [imageUri, setImageUri] = useState<string | null>(null);
-  const navigation = useNavigation<NavigationProp>();
+  const [loading, setLoading] = useState(false);
 
-  const openModal = (item: Item) => {
-    setSelectedTool(item);
+  const escolherFiltro = (nomeDoFiltro: string) => {
+    setSelectedFilter(nomeDoFiltro);
+  };
+
+  const onToolPress = (tool: Item) => {
+    setSelectedTool(tool);
+    setSelectedFilter(tool.name); // ← Aqui você garante que o filtro foi definido
     setModalVisible(true);
+    setImageUri(null);
+  };  
+
+  const handleCloseModal = () => {
+    setModalVisible(false);
+    setSelectedTool(null);
   };
 
-  const cameraHandle = async () => {
-    const ls = await openCamera();
-    setModalVisible(false);
-    navigation.navigate("Photo", { imageUri: ls });
-  };
-
-  const galleryHandle = async () => {
-    const ls = await openGallery();
-    setModalVisible(false);
-    navigation.navigate("Photo", { imageUri: ls });
+  const handleUploadAndFilter = async (imageUri: string) => {
+    if (!selectedFilter) {
+      Alert.alert("Erro", "Selecione um filtro antes.");
+      return;
+    }
+  
+    const uploadedImage = await uploadImage(imageUri);
+    if (!uploadedImage) {
+      Alert.alert("Erro", "Não foi possível enviar a imagem.");
+      return;
+    }
+  
+    await applyFilterToImage(uploadedImage.id, selectedFilter);
+  
+    navigation.navigate("Photo", { imageId: uploadedImage.id });
   };
 
   return (
-    <View
-      style={[
-        tw`mt-6 px-2`,
-        center && tw`items-center`,
-        !center && tw`items-start`,
-      ]}
-    >
-      <Text style={tw`text-white text-lg font-semibold left-6 self-start`}>
+    <View style={tw`mt-6 px-4`}>
+      <Text style={tw`text-white text-lg font-semibold mb-2`}>
         {title}
       </Text>
 
@@ -129,8 +143,11 @@ const Section: React.FC<{
         keyExtractor={(item) => item.name}
         renderItem={({ item }) => (
           <TouchableOpacity
-            onPress={() => openModal(item)}
-            style={tw`bg-slate-700 ${wide ? "w-36" : "w-28"} h-28 p-3 rounded-lg items-center justify-center mx-2`}
+            onPress={() => onToolPress(item)}
+            style={tw.style(
+              "bg-slate-700 w-28 h-28 p-3 rounded-lg items-center justify-center mx-2",
+              selectedTool?.name === item.name && "border-2 border-cyan-400"
+            )}
           >
             <Icon name={item.icon} size={24} color="#fff" />
             <Text style={tw`text-white text-xs mt-2 text-center`}>
@@ -138,18 +155,16 @@ const Section: React.FC<{
             </Text>
           </TouchableOpacity>
         )}
-        contentContainerStyle={tw`mt-2 px-4 items-center`}
+        contentContainerStyle={tw`mt-2`}
         showsHorizontalScrollIndicator={false}
       />
 
-        <Animated.View
-            entering={FadeInUp.delay(100).duration(500)}
-        >
-        <Modal visible={modalVisible} transparent animationType="fade">
+      {/* Modal de seleção */}
+      <Modal visible={modalVisible} transparent animationType="fade">
         <TouchableOpacity
           style={tw`flex-1 items-center justify-center bg-black bg-opacity-50`}
           activeOpacity={1}
-          onPressOut={() => setModalVisible(false)}
+          onPressOut={handleCloseModal}
         >
           <View style={tw`bg-slate-800 w-72 p-6 rounded-2xl shadow-lg`}>
             <Text style={tw`text-white text-lg font-semibold text-center mb-6`}>
@@ -158,39 +173,40 @@ const Section: React.FC<{
 
             <View style={tw`flex-row justify-around mb-4`}>
               <TouchableOpacity
-                onPress={cameraHandle}
-                style={tw`bg-sky-500 px-4 py-3 rounded-lg items-center gap-2`}
+                onPress={async () => {
+                  const uri = await openCamera();
+                  if (uri) {
+                    await handleUploadAndFilter(uri);
+                    setModalVisible(false);
+                  }
+                }}                
+                style={tw`bg-sky-500 px-4 py-3 rounded-lg items-center`}
               >
-                <Camera color="white" size={40} />
-                <Text style={tw`text-white font-semibold`}>Câmera</Text>
+                <Icon name="camera" size={30} color="#fff" />
+                <Text style={tw`text-white font-semibold mt-1`}>Câmera</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                onPress={galleryHandle}
-                style={tw`bg-teal-500 justify-center px-4 py-3 rounded-lg flex-column items-center gap-2`}
+                onPress={async () => {
+                  const uri = await openGallery();
+                  if (uri) {
+                    await handleUploadAndFilter(uri);
+                    setModalVisible(false);
+                  }
+                }}
+                style={tw`bg-teal-500 px-4 py-3 rounded-lg items-center`}
               >
                 <Icon name="image" size={30} color="#fff" />
-                <Text style={tw`text-white font-semibold`}>Galeria</Text>
+                <Text style={tw`text-white font-semibold mt-1`}>Galeria</Text>
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity onPress={() => setModalVisible(false)}>
-              <Text style={tw`text-center text-red-400 text-sm mt-1`}>
-                Cancelar
-              </Text>
+            <TouchableOpacity onPress={handleCloseModal}>
+              <Text style={tw`text-center text-red-400 text-sm`}>Cancelar</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
       </Modal>
-      </Animated.View>
-
-      {imageUri && (
-        <Image
-          source={{ uri: imageUri }}
-          style={tw`w-60 h-60 rounded-lg mt-4`}
-          resizeMode="contain"
-        />
-      )}
     </View>
   );
 };
@@ -259,8 +275,6 @@ export const Ferramentas: React.FC = () => {
         key={detecaoRealceSection.title}
         title={detecaoRealceSection.title}
         data={detecaoRealceSection.data}
-        wide
-        center
       />
 
       <Section
