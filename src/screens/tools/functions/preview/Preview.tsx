@@ -18,6 +18,7 @@ import { RootStackParamList } from "../../../../types/rootStackParamList";
 import type { StackNavigationProp } from "@react-navigation/stack";
 import type { ImageType } from "../../../images/Services/MinhasImagens";
 import { useImagesServices } from "../../../images/Services/MinhasImagens";
+import { useImagesContext } from "../../../../contexts/ImageContext/imageContext";
 
 export const ImagePreviewScreen = () => {
   const [images, setImages] = useState<ImageType[]>([]);
@@ -26,9 +27,9 @@ export const ImagePreviewScreen = () => {
   const route = useRoute();
   const { imageUri } = route.params as { imageUri: string };
 
-  const { uploadImage } = useImagesServices();
+  const { uploadImage } = useImagesContext();
 
-  const handleSave = () => {
+  const handleSave = async() => {
     console.log("handleSave foi chamado");
     console.log("authState?.token:", authState?.token);
     console.log("imageId:", imageUri);
@@ -38,12 +39,10 @@ export const ImagePreviewScreen = () => {
       Alert.alert("Erro", "Token ou imageId ausente.");
       return;
     }
+
+    await uploadImage(imageUri);
   
-    uploadImage(imageUri, authState.token, () => {
-      console.log("Upload feito");
-    });
-  
-    Alert.alert("Imagem guardada em Minhas Imagens com sucesso!");
+    Alert.alert("Imagem guardada com sucesso!");
   };  
 
   const handleDownload = async () => {

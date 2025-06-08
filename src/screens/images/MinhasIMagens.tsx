@@ -17,10 +17,10 @@ import { useNavigation } from "@react-navigation/native";
 import { useImagesServices } from "./Services/MinhasImagens";
 import type { RootStackParamList } from "../../types/rootStackParamList";
 import { Star, StarOff } from "lucide-react-native";
+import { useImagesContext } from "../../contexts/ImageContext/imageContext";
 
 function FallbackImage(props: ImageProps) {
   const [error, setError] = useState(false);
-
   const isRemote = props.source && typeof props.source === "object" && "uri" in props.source;
 
   return (
@@ -35,17 +35,27 @@ function FallbackImage(props: ImageProps) {
 export function ImageGallery() {
   const navigation = useNavigation<DrawerNavigationProp<RootStackParamList>>();
   const {
-    images,
-    loading,
     modalVisible,
     selectedImageIndex,
     openModal,
-    handleImageEdit,
-    handleDelete,
     handleImageSave,
     handleFavorite,
     setModalVisible,
+    setSelectedImageIndex,
   } = useImagesServices();
+
+  const { images, loading, deleteImage } = useImagesContext();
+
+  const handleDelete = async () => {
+    if (selectedImageIndex !== null && images[selectedImageIndex]) {
+      const imageToDelete = images[selectedImageIndex];
+      await deleteImage(imageToDelete);
+      setModalVisible(false);
+      setSelectedImageIndex(null);
+    }
+  };
+
+  const selectedImage = selectedImageIndex !== null ? images[selectedImageIndex] : null;
 
   return (
     <View style={tw`flex-1 bg-slate-900`}>
@@ -59,6 +69,7 @@ export function ImageGallery() {
           <Icon name="bars" size={24} color="#fff" />
         </TouchableOpacity>
       </View>
+
       <Text style={tw`text-white text-xl ml-5 mb-7 mt-2`}>Minhas imagens...</Text>
 
       {/* Conteúdo */}
@@ -86,7 +97,7 @@ export function ImageGallery() {
       )}
 
       {/* Modal */}
-      {selectedImageIndex !== null && (
+      {modalVisible && selectedImage && (
         <Modal
           animationType="fade"
           transparent={true}
@@ -95,11 +106,15 @@ export function ImageGallery() {
         >
           <View style={tw`flex-1 items-center justify-center bg-black bg-opacity-50`}>
             <View style={tw`bg-slate-800 w-79 h-98 p-4 justify-center rounded-2 items-center`}>
-              <FallbackImage
-                source={{ uri: images[selectedImageIndex].uri }}
-                style={tw`absolute rounded-2 bottom-20 left-0 right-0 w-79 h-79`}
-                resizeMode="cover"
-              />
+              {selectedImage.uri ? (
+                <FallbackImage
+                  source={{ uri: selectedImage.uri }}
+                  style={tw`absolute rounded-2 bottom-20 left-0 right-0 w-79 h-79`}
+                  resizeMode="cover"
+                />
+              ) : (
+                <Text style={tw`text-white`}>Imagem indisponível</Text>
+              )}
 
               <View style={tw`absolute m-3 bottom-2 left-0 right-0 flex-row items-center justify-center`}>
                 {/* Informações da imagem */}
@@ -109,16 +124,16 @@ export function ImageGallery() {
                     ellipsizeMode="tail"
                     style={tw`text-white text-sm font-semibold`}
                   >
-                    {images[selectedImageIndex]?.filename}
+                    {selectedImage.filename}
                   </Text>
                   <View style={tw`flex-row items-center mt-1`}>
-                  <Text style={tw`text-white text-sm`}>{images[selectedImageIndex]?.dataFormatada}</Text>
+                    <Text style={tw`text-white text-sm`}>{selectedImage.dataFormatada}</Text>
                   </View>
                 </View>
 
                 {/* Botões */}
                 <View style={tw`flex-row items-center ml-4 gap-2`}>
-                  <TouchableOpacity style={tw`items-center`} onPress={() => handleDelete(images[selectedImageIndex])} >
+                  <TouchableOpacity style={tw`items-center`} onPress={handleDelete}>
                     <Icon name="trash" size={28} color="#62748E" />
                     <Text style={tw`text-white text-xs`}>Excluir</Text>
                   </TouchableOpacity>
@@ -129,14 +144,13 @@ export function ImageGallery() {
                   </TouchableOpacity>
 
                   <TouchableOpacity style={tw`items-center`} onPress={() => handleFavorite()}>
-  {images[selectedImageIndex]?.user_favorite ? (
-    <Star color="#62748E" size={28} />
-  ) : (
-    <StarOff color="#62748E" size={28} />
-  )}
-  <Text style={tw`text-white text-xs`}>Favoritar</Text>
-</TouchableOpacity>
-
+                    {selectedImage.user_favorite ? (
+                      <Star color="#62748E" size={28} />
+                    ) : (
+                      <StarOff color="#62748E" size={28} />
+                    )}
+                    <Text style={tw`text-white text-xs`}>Favoritar</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
             </View>

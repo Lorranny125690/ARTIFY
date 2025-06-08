@@ -1,83 +1,192 @@
-import { createContext, useContext, useState } from 'react';
-import Axios from '../../scripts/axios';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { Alert } from "react-native";
+import { API_URL, useAuth } from "../AuthContext/authenticatedUser";
+import Axios from "../../scripts/axios";
 
-interface ImageData {
+export type ImageType = {
   id: string;
-  url: string;
-  title?: string;
-  createdAt?: string;
-}
-
-interface ImageContextProps {
-  images: ImageData[];
-  isLoading: boolean;
-  uploadImage: (formData: FormData) => Promise<any>;
-  fetchImages: () => Promise<void>;
-  deleteImage: (id: string) => Promise<void>;
-}
-
-const ImageContext = createContext<ImageContextProps>({
-  images: [],
-  isLoading: false,
-  uploadImage: async () => {},
-  fetchImages: async () => {},
-  deleteImage: async () => {},
-});
-
-export const useImage = () => {
-  return useContext(ImageContext);
+  uri: string;
+  filename: string;
+  dataFormatada: string;
+  user_favorite: boolean;
 };
 
-export const ImageProvider = ({ children }: any) => {
-  const [images, setImages] = useState<ImageData[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+interface ImagesContextProps {
+  images: ImageType[];
+  fetchImages: () => void;
+  loading: boolean;
+  setImages: React.Dispatch<React.SetStateAction<ImageType[]>>;
+  uploadImage: (imageUri: string) => Promise<void>;
+  deleteImage: (image: ImageType) => Promise<void>;
+  toggleFavorite: (image: ImageType) => Promise<void>;
+}
+
+const ImagesContext = createContext<ImagesContextProps | undefined>(undefined);
+
+export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [images, setImages] = useState<ImageType[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const { authState } = useAuth();
 
   const fetchImages = async () => {
+    setLoading(true);
     try {
-      setIsLoading(true);
-      const response = await Axios.get(`/images`); 
-      setImages(response.data);
-      alert(response.data)
-    } catch (error) {
-      console.error("Erro ao buscar imagens:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const uploadImage = async (formData: FormData) => {
-    try {
-      setIsLoading(true);
-      const response = await Axios.post(`/images`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      const token = authState?.token;
+      const result = await Axios.get("/images", {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      await fetchImages(); 
-      return response;
-    } catch (error) {
-      console.error("Erro ao fazer upload da imagem:", error);
-      return { error: true, msg: "Erro ao fazer upload" };
+
+      const simplifiedList = result.data.simplified;
+
+      const imagesWithUrls: ImageType[] = simplifiedList.map((img: any) => {
+        const data = img.date ? new Date(img.date) : new Date();
+        const dataFormatada = data.toLocaleDateString("pt-BR");
+
+        return {
+          id: img.id,
+          uri: img.public_url.startsWith("http")
+            ? img.public_url
+            : `${API_URL}${img.public_url}`,
+          filename: img.filename,
+          dataFormatada,
+          user_favorite: img.favorite,
+        };
+      });
+
+      setImages(imagesWithUrls);
+    } catch (e: any) {
+      console.warn("Erro ao buscar imagens:", e?.response?.data?.msg || e.message);
+      Alert.alert("Erro", "Não foi possível carregar as imagens.");
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const deleteImage = async () => {
+  useEffect(() => {
+    if (authState?.authenticated) {
+      fetchImages();
+    }
+  }, [authState?.authenticated]);
+
+  const uploadImage = async (imageUri: string) => {
     try {
-      setIsLoading(true);
-      await Axios.delete(`/images`);
+      if (!imageUri) throw new Error("URI da imagem ausente.");
+
+      const formData = new FormData();
+      formData.append("file", {
+        uri: imageUri,
+        type: "image/jpeg",
+        name: "foto.jpg",
+      } as any);
+
+      const token = authState?.token;
+      if (!token) throw new Error("Token de autenticação ausente.");
+
+      const response = await fetch(`${API_URL}/images`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Erro do servidor: ${errText}`);
+      }
+
       await fetchImages();
-    } catch (error) {
-      console.error("Erro ao deletar imagem:", error);
-    } finally {
-      setIsLoading(false);
+    } catch (error: any) {
+      console.error("Erro ao fazer upload: ", error?.message || error);
+      Alert.alert("Erro", "Não foi possível fazer o upload da imagem.");
+    }
+  };
+
+  const deleteImage = async (imageToDelete: ImageType) => {
+    Alert.alert(
+      "Excluir imagem",
+      "Tem certeza que deseja excluir esta imagem?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "OK",
+          onPress: async () => {
+            try {
+              const token = authState?.token;
+              if (!token) throw new Error("Token não encontrado.");
+
+              await Axios.delete(`/images/${imageToDelete.id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+              });
+
+              const updatedImages = images.filter((img) => img.id !== imageToDelete.id);
+              setImages(updatedImages);
+
+              Alert.alert("Sucesso", "Imagem excluída com sucesso.");
+            } catch (e: any) {
+              console.warn("Erro ao excluir imagem:", e?.response?.data?.msg || e?.message || "Erro desconhecido");
+              Alert.alert("Erro", e?.response?.data?.msg || e?.message || "Não foi possível excluir a imagem.");
+            }            
+          },
+        },
+      ],
+      { cancelable: false }
+    );
+  };
+
+  const toggleFavorite = async (imageToToggle: ImageType) => {
+    try {
+      const newFavoriteStatus = !imageToToggle.user_favorite;
+      const token = authState?.token;
+
+      if (!token) throw new Error("Token não encontrado.");
+
+      await Axios.put(
+        "/images",
+        {
+          imageId: imageToToggle.id,
+          user_favorite: newFavoriteStatus,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const updatedImages = images.map((img) =>
+        img.id === imageToToggle.id ? { ...img, user_favorite: newFavoriteStatus } : img
+      );
+
+      setImages(updatedImages);
+
+      Alert.alert(
+        "Sucesso",
+        newFavoriteStatus ? "Imagem favoritada!" : "Imagem desmarcada como favorita."
+      );
+    } catch (error: any) {
+      console.error("Erro ao favoritar imagem:", error?.response?.data?.msg || error.message);
+      Alert.alert("Erro", "Não foi possível atualizar a imagem.");
     }
   };
 
   return (
-    <ImageContext.Provider value={{ images, isLoading, uploadImage, fetchImages, deleteImage }}>
+    <ImagesContext.Provider
+      value={{
+        images,
+        fetchImages,
+        loading,
+        setImages,
+        uploadImage,
+        deleteImage,
+        toggleFavorite,
+      }}
+    >
       {children}
-    </ImageContext.Provider>
+    </ImagesContext.Provider>
   );
+};
+
+export const useImagesContext = () => {
+  const context = useContext(ImagesContext);
+  if (!context) throw new Error("useImagesContext deve ser usado dentro de ImagesProvider");
+  return context;
 };

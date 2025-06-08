@@ -25,6 +25,7 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from "react-native-reanimated";
+import { useAuth } from "../../contexts/AuthContext/authenticatedUser";
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -197,10 +198,13 @@ const Section: React.FC<{
 export const Ferramentas: React.FC = () => {
   const navigation = useNavigation<DrawerNavigationProp<any>>();
   const [recentEdits, setRecentEdits] = useState<Images[]>([]);
+  const { authState } = useAuth();
+
+  const token = authState?.token;
 
   useEffect(() => {
     const fetchImages = async () => {
-      const loadRecentImages = await RecentProcessedImages();
+      const loadRecentImages = await RecentProcessedImages(token);
       setRecentEdits(loadRecentImages);
     };
     fetchImages();
@@ -228,8 +232,8 @@ export const Ferramentas: React.FC = () => {
               <View style={tw`bg-slate-700 m-2 p-4 rounded-lg w-29 mx-2 items-center shadow-lg`}>
                 <Image
                   source={
-                    item.stored_filepath
-                      ? { uri: item.stored_filepath }
+                    item.public_url
+                      ? { uri: item.public_url }
                       : require("../../assets/icon.png")
                   }
                   style={tw`w-16 h-16`}
