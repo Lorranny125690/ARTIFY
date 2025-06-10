@@ -17,7 +17,8 @@ import { DrawerNavigationProp } from "@react-navigation/drawer";
 import { useNavigation } from "@react-navigation/native";
 import type { RootStackParamList } from "../../types/rootStackParamList";
 import { useFavoritos } from "./Services/Favorites";
-import { Star } from "lucide-react-native";
+import { Star, StarOff } from "lucide-react-native";
+import { useImagesServices } from "../images/Services/MinhasImagens";
 
 function FallbackImage(props: ImageProps) {
   const [error, setError] = useState(false);
@@ -47,6 +48,12 @@ export function Favorito() {
     openModal,
     setModalVisible,
   } = useFavoritos();
+
+  const {
+    handleImageSave,
+    handleFavorite,
+    handleDelete,
+  } = useImagesServices();
 
   const selectedImage =
     selectedImageIndex !== null ? images[selectedImageIndex] : null;
@@ -113,9 +120,7 @@ export function Favorito() {
                 resizeMode="cover"
               />
 
-              <View
-                style={tw`absolute m-3 bottom-2 left-0 right-0 flex-row items-center justify-center`}
-              >
+              <View style={tw`absolute m-3 gap-2 bottom-2 left-0 right-0 flex-row items-center justify-center`}>
                 {/* Informações da imagem */}
                 <View style={tw`flex-1`}>
                   <Text
@@ -126,11 +131,29 @@ export function Favorito() {
                     {selectedImage.filename}
                   </Text>
                   <View style={tw`flex-row items-center mt-1`}>
-                    <Text style={tw`text-white text-sm`}>
-                      {selectedImage.dataFormatada}
-                    </Text>
+                    <Text style={tw`text-white text-sm`}>{selectedImage.dataFormatada}</Text>
                   </View>
                 </View>
+
+                {/* Botões */}
+                  <TouchableOpacity style={tw`items-center`} onPress={handleDelete}>
+                    <Icon name="trash" size={28} color="#62748E" />
+                    <Text style={tw`text-white text-xs`}>Excluir</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={tw`items-center`} onPress={handleImageSave}>
+                    <Icon name="save" size={28} color="#62748E" />
+                    <Text style={tw`text-white text-xs`}>Download</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={tw`items-center`} onPress={() => handleFavorite()}>
+                    {selectedImage.user_favorite ? (
+                      <AntDesign name="star" size={28} color="#FFEB3B" />
+                    ) : (
+                      <AntDesign name="staro" size={28} color="#fff" />
+                    )}
+                    <Text style={tw`text-white text-xs`}>Favoritar</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
             </View>

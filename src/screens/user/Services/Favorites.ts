@@ -1,14 +1,8 @@
-import { useEffect, useState } from "react";
+import { Alert } from "react-native";
 import { API_URL, useAuth } from "../../../contexts/AuthContext/authenticatedUser";
 import Axios from "../../../scripts/axios";
-import { Alert } from "react-native";
-
-export type ImageType = {
-  id: string;
-  uri: string;
-  filename: string;
-  dataFormatada: string;
-};
+import { useEffect, useState } from "react";
+import type { ImageType } from "../../../contexts/ImageContext/imageContext";
 
 export function useFavoritos() {
   const [images, setImages] = useState<ImageType[]>([]);
@@ -21,28 +15,32 @@ export function useFavoritos() {
     setLoading(true);
     try {
       const token = authState?.token;
-  
+
       const result = await Axios.get("/images", {
         headers: { Authorization: `Bearer ${token}` },
       });
-  
-      const simplifiedList = result.data.simplified;
-  
-      const imagesWithUrls: ImageType[] = simplifiedList.map((img: any) => {
+
+      // pega todas as imagens
+      const allImages = result.data.simplified || [];
+
+      // filtra só as favoritas
+      const favorites = allImages.filter((img: any) => img.favorite === true);
+
+      const imagesWithUrls: ImageType[] = favorites.map((img: any) => {
         const data = img.date ? new Date(img.date) : new Date();
         const dataFormatada = data.toLocaleDateString("pt-BR");
-  
+
         return {
           id: img.id,
           uri: img.public_url.startsWith("http")
             ? img.public_url
             : `${API_URL}${img.public_url}`,
-          filename: "",
+          filename: img.filename,
           dataFormatada,
-          user_favorite: img.favorite,
+          user_favorite: true,
         };
       });
-  
+
       setImages(imagesWithUrls);
     } catch (e: any) {
       console.warn("Erro ao buscar imagens:", e?.response?.data?.msg || e.message);
@@ -50,13 +48,13 @@ export function useFavoritos() {
     } finally {
       setLoading(false);
     }
-  };  
+  };
 
   useEffect(() => {
     if (authState?.authenticated) {
       fetchImages();
     }
-  }, [authState?.authenticated]); 
+  }, [authState?.authenticated]);
 
   const openModal = (index: number) => {
     setSelectedImageIndex(index);

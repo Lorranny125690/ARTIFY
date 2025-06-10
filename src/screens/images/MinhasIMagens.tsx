@@ -18,6 +18,7 @@ import { useImagesServices } from "./Services/MinhasImagens";
 import type { RootStackParamList } from "../../types/rootStackParamList";
 import { Star, StarOff } from "lucide-react-native";
 import { useImagesContext } from "../../contexts/ImageContext/imageContext";
+import AntDesign from "react-native-vector-icons/AntDesign";
 
 function FallbackImage(props: ImageProps) {
   const [error, setError] = useState(false);
@@ -145,9 +146,9 @@ export function ImageGallery() {
 
                   <TouchableOpacity style={tw`items-center`} onPress={() => handleFavorite()}>
                     {selectedImage.user_favorite ? (
-                      <Star color="#62748E" size={28} />
+                      <AntDesign name="star" size={28} color="#FFEB3B" />
                     ) : (
-                      <StarOff color="#62748E" size={28} />
+                      <AntDesign name="staro" size={28} color="#62748E"/>
                     )}
                     <Text style={tw`text-white text-xs`}>Favoritar</Text>
                   </TouchableOpacity>

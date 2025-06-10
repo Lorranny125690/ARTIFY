@@ -81,7 +81,7 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           filename: img.filename,
           dataFormatada,
           user_favorite: img.favorite,
-          type: "processed"
+          type: img.type
         };
       });
 
