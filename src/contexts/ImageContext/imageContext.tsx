@@ -17,12 +17,12 @@ interface ImagesContextProps {
   fetchImages: () => void;
   loading: boolean;
   setImages: React.Dispatch<React.SetStateAction<ImageType[]>>;
-  uploadImage: (imageUri: string) => Promise<ImageType | null>;
+  uploadImage: (imageUri: string) => Promise<{ Id: string } | void>;
   deleteImage: (image: ImageType) => Promise<void>;
   toggleFavorite: (image: ImageType) => Promise<void>;
   selectedFilter: string | null;
   setSelectedFilter: React.Dispatch<React.SetStateAction<string | null>>;
-  applyFilterToImage: (image: string, filterName: string) => Promise<void>;
+  applyFilterToImage: (image: ImageType) => Promise<void>;
 }
 
 const ImagesContext = createContext<ImagesContextProps | undefined>(undefined);
@@ -81,6 +81,7 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           filename: img.filename,
           dataFormatada,
           user_favorite: img.favorite,
+          type: "processed"
         };
       });
 
@@ -99,65 +100,45 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, [authState?.authenticated]);
 
-  const uploadImage = async (imageUri: string): Promise<ImageType | null> => {
+  const uploadImage = async (imageUri: string): Promise<{ Id: string } | void> => {
     try {
-      if (!imageUri) throw new Error("URI da imagem ausente.");
+      const token = authState?.token;
+      if (!token) {
+        Alert.alert("Erro", "Usuário não autenticado.");
+        return;
+      }
   
       const formData = new FormData();
       formData.append("file", {
         uri: imageUri,
         type: "image/jpeg",
-        name: "foto.jpg",
+        name: `image_${Date.now()}.jpg`,
       } as any);
   
-      const token = authState?.token;
-      if (!token) throw new Error("Token de autenticação ausente.");
-  
-      const response = await fetch(`${API_URL}/images`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
+      const response = await Axios.post("/images", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
       });
   
-      if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`Erro do servidor: ${errText}`);
+      if (response.status === 201) {
+        const image = response.data.image;
+        Alert.alert("Sucesso", `Imagem enviada com sucesso! ID: ${image.Id}`);
+        console.log("Imagem salva:", image);
+
+        await applyFilterToImage({ id: image.Id } as ImageType);
+        
+        await fetchImages();
+        return { Id: image.Id };
+      } else {
+        Alert.alert("Erro", "Erro ao enviar a imagem.");
       }
-  
-      const result = await Axios.get("/images", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-  
-      const simplifiedList = result.data.simplified;
-  
-      const uploaded = simplifiedList
-        .filter((img: any) => img.type === "uploaded")
-        .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  
-      const lastUploaded = uploaded[0];
-  
-      if (!lastUploaded) return null;
-  
-      const image: ImageType = {
-        id: lastUploaded.id,
-        uri: lastUploaded.public_url.startsWith("http")
-          ? lastUploaded.public_url
-          : `${API_URL}${lastUploaded.public_url}`,
-        filename: lastUploaded.filename,
-        dataFormatada: new Date(lastUploaded.date).toLocaleDateString("pt-BR"),
-        user_favorite: lastUploaded.favorite,
-        type: "processed"
-      };
-  
-      setImages((prev) => [...prev, image]);
-  
-      return image;
     } catch (error: any) {
-      console.error("Erro ao fazer upload: ", error.message);
-      Alert.alert("Erro", "Não foi possível fazer o upload da imagem.");
-      return null;
+      console.warn("Erro ao guardar imagem:", error);
+      Alert.alert("Erro", error?.response?.data?.msg || "Erro ao enviar imagem.");
     }
-  };  
+  };   
 
   const deleteImage = async (imageToDelete: ImageType) => {
     Alert.alert(
@@ -227,23 +208,15 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
 
-  const applyFilterToImage = async (imageId: string, filterName: string) => {
-    try {
-      const filter = FILTER_API_MAP[filterName];
-      console.log("Filtro selecionado:", filterName, "→", filter);
-  
-      if (!filter) {
-        Alert.alert("Erro", `Filtro não reconhecido: ${filterName}`);
-        return;
-      }
+  const applyFilterToImage = async (image: ImageType) => {
+    try {;
   
       const token = authState?.token;
       if (!token) throw new Error("Token de autenticação ausente.");
   
-      // Aqui, envia só o imageId no corpo, como seu backend espera
       await Axios.post(
-        `/process/defined/${filter}`,
-        { imageId },
+        `/processes/defined/grayscale`,
+        { image_id: image.id },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -252,8 +225,8 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         }
       );
   
-      Alert.alert("Sucesso", `Filtro "${filterName}" aplicado com sucesso!`);
-      fetchImages();
+      Alert.alert("Sucesso", `Filtro aplicado com sucesso!`);
+      await fetchImages();
     } catch (error: any) {
       console.error("Erro ao aplicar filtro:", error?.response?.data?.msg || error.message);
       Alert.alert("Erro", "Não foi possível aplicar o filtro à imagem.");

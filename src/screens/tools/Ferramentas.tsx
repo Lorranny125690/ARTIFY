@@ -104,7 +104,7 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
 
   const onToolPress = (tool: Item) => {
     setSelectedTool(tool);
-    setSelectedFilter(tool.name); // ← Aqui você garante que o filtro foi definido
+    setSelectedFilter(tool.name);
     setModalVisible(true);
     setImageUri(null);
   };  
@@ -121,15 +121,14 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
     }
   
     const uploadedImage = await uploadImage(imageUri);
+  
     if (!uploadedImage) {
-      Alert.alert("Erro", "Não foi possível enviar a imagem.");
+      Alert.alert("Erro", "Falha ao enviar imagem.");
       return;
     }
   
-    await applyFilterToImage(uploadedImage.id, selectedFilter);
-  
-    navigation.navigate("Photo", { imageId: uploadedImage.id });
-  };
+    navigation.navigate("Photo", { imageId: uploadedImage.Id });
+  };  
 
   return (
     <View style={tw`mt-6 px-4`}>

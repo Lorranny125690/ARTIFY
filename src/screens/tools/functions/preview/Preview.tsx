@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -6,49 +6,36 @@ import {
   TouchableOpacity,
   Alert,
   SafeAreaView,
+  ScrollView,
 } from "react-native";
 import tw from "twrnc";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import * as MediaLibrary from "expo-media-library";
 import * as FileSystem from "expo-file-system";
 import Icon from "react-native-vector-icons/FontAwesome";
-import Axios from "../../../../scripts/axios";
-import { API_URL, useAuth } from "../../../../contexts/AuthContext/authenticatedUser";
+import { useAuth } from "../../../../contexts/AuthContext/authenticatedUser";
 import { RootStackParamList } from "../../../../types/rootStackParamList";
 import type { StackNavigationProp } from "@react-navigation/stack";
-import type { ImageType } from "../../../images/Services/MinhasImagens";
-import { useImagesServices } from "../../../images/Services/MinhasImagens";
 import { useImagesContext } from "../../../../contexts/ImageContext/imageContext";
+import { Dimensions } from "react-native";
+const screenHeight = Dimensions.get("window").height;
 
 export const ImagePreviewScreen = () => {
-  const [images, setImages] = useState<ImageType[]>([]);
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const { authState } = useAuth();
   const route = useRoute();
-  const { imageUri } = route.params as { imageUri: string };
+  const { imageId } = route.params as { imageId: string };
 
-  const { uploadImage } = useImagesContext();
+  const { images } = useImagesContext();
+  const image = images.find((img) => img.id === imageId);
 
-  const handleSave = async () => {
-    console.log("handleSave foi chamado");
-    console.log("authState?.token:", authState?.token);
-    console.log("imageUri:", imageUri);
-    console.log("ROUTE PARAMS:", route.params);
-  
-    if (!authState?.token || !imageUri) {
-      Alert.alert("Erro", "Token ou imagem ausente.");
-      return;
-    }
-  
-    try {
-      await uploadImage(imageUri);
-      Alert.alert("Sucesso", "Imagem guardada em Minhas Imagens com sucesso!");
-      navigation.goBack();
-    } catch (error) {
-      console.error("Erro ao guardar imagem:", error);
-      Alert.alert("Erro", "Não foi possível guardar a imagem.");
-    }
-  };   
+  if (!image) {
+    return (
+      <SafeAreaView style={tw`flex-1 bg-slate-900 justify-center items-center`}>
+        <Text style={tw`text-white text-base`}>Imagem não encontrada.</Text>
+      </SafeAreaView>
+    );
+  }
 
   const handleDownload = async () => {
     const { status } = await MediaLibrary.requestPermissionsAsync();
@@ -61,11 +48,11 @@ export const ImagePreviewScreen = () => {
     }
 
     try {
-      const fileName = imageUri?.split("/").pop() || `imagem_${Date.now()}.jpg`;
+      const fileName = image.uri?.split("/").pop() || `imagem_${Date.now()}.jpg`;
       const destPath = `${FileSystem.cacheDirectory}${fileName}`;
 
       await FileSystem.copyAsync({
-        from: imageUri,
+        from: image.uri,
         to: destPath,
       });
 
@@ -77,64 +64,48 @@ export const ImagePreviewScreen = () => {
     }
   };
 
-  if (!imageUri) {
-    return (
-      <SafeAreaView style={tw`flex-1 bg-slate-900 justify-center items-center`}>
-        <Text style={tw`text-white text-center`}>
-          Nenhuma imagem foi fornecida para pré-visualização.
-        </Text>
-      </SafeAreaView>
-    );
-  }
-
   return (
     <SafeAreaView style={tw`flex-1 bg-slate-900`}>
-      {/* Cabeçalho */}
-      <View style={tw`flex-row items-center justify-between px-4 py-3 bg-slate-800`}>
-        <Text style={tw`text-white text-lg font-bold`}>Pré-visualização</Text>
+      {/* Header bonito */}
+      <View style={tw`flex-row items-center justify-between px-5 py-4 bg-slate-800 shadow-lg`}>
+        <Text style={tw`text-white text-xl font-bold`}>🔍  Pré-visualização</Text>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="close" size={22} color="#fff" />
+          <Icon name="times" size={24} color="#fff" />
         </TouchableOpacity>
       </View>
 
-      {/* Imagem */}
-      <View style={tw`flex-1 items-center justify-center px-4`}>
+      {/* Imagem centralizada */}
+      <ScrollView contentContainerStyle={tw`flex-grow px-5 py-6 items-center justify-center`}>
+        <View style={tw`w-full rounded-3xl overflow-hidden shadow-xl mb-6`}>
         <Image
-          source={{ uri: imageUri }}
-          style={tw`w-full h-90 rounded-xl shadow-lg`}
+          source={{ uri: image.uri }}
+          style={[tw`w-full rounded-3xl`, { height: screenHeight * 0.6 }]}
           resizeMode="cover"
         />
-      </View>
+        </View>
 
-      {/* Ações */}
-      <View style={tw`px-6 pb-6`}>
-        <TouchableOpacity
-          onPress={() => {handleSave()}}
-          style={tw`bg-blue-500 py-3 rounded-3xl mb-3 shadow-md`}
-        >
-          <Text style={tw`text-white text-center text-base font-semibold`}>
-            Guardar Edição
-          </Text>
-        </TouchableOpacity>
-
+        {/* Botão de download */}
         <TouchableOpacity
           onPress={handleDownload}
-          style={tw`bg-green-500 py-3 rounded-3xl mb-3 shadow-md`}
+          style={tw`flex-row items-center justify-center bg-sky-600 py-3 px-6 rounded-full mb-4 shadow-md`}
         >
-          <Text style={tw`text-white text-center text-base font-semibold`}>
+          <Icon name="download" size={18} color="#fff" style={tw`mr-2`} />
+          <Text style={tw`text-white text-base font-semibold`}>
             Baixar para Galeria
           </Text>
         </TouchableOpacity>
 
+        {/* Botão de cancelar */}
         <TouchableOpacity
           onPress={() => navigation.goBack()}
-          style={tw`py-3 rounded-lg`}
+          style={tw`flex-row items-center justify-center py-3`}
         >
-          <Text style={tw`text-center text-red-400 font-medium text-base`}>
+          <Icon name="arrow-left" size={18} color="#f87171" style={tw`mr-2`} />
+          <Text style={tw`text-red-400 font-semibold text-base`}>
             Cancelar e Voltar
           </Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
