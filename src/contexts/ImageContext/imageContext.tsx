@@ -209,7 +209,7 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const applyFilterToImage = async (image: ImageType) => {
-    try {;
+    try {
   
       const token = authState?.token;
       if (!token) throw new Error("Token de autenticação ausente.");
