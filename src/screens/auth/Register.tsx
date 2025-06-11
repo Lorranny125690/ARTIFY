@@ -43,13 +43,13 @@ export const SignupScreen = () => {
   
     const result = await onRegister!(Email, Password, userName);
   
+    const status = result?.data?.statusCode;
+
     if (!result || result.error) {
       setModalMsg("Algo deu errado. Tente novamente.");
       setModalVisible(true);
       return;
     }
-  
-    const status = result.data?.statusCode;
   
     if (status === 409) {
       setModalMsg("Email já em uso 😳.");
@@ -62,8 +62,7 @@ export const SignupScreen = () => {
       setModalVisible(true);
       return;
     }
-  
-    // Sucesso
+    
     await login();
   };  
 

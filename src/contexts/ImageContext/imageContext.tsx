@@ -69,9 +69,10 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       const simplifiedList = result.data.simplified;
 
-      const allimages = simplifiedList.filter((img: any) => img.type === "processed");
+      const imageProcessed = simplifiedList.filter((img: any) => img.type === 1);
+      console.log(simplifiedList)
 
-      const imagesWithUrls: ImageType[] = allimages.map((img: any) => {
+      const imagesWithUrls: ImageType[] = imageProcessed.map((img: any) => {
         const data = img.date ? new Date(img.date) : new Date();
         const dataFormatada = data.toLocaleDateString("pt-BR");
 
@@ -82,7 +83,7 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             : `${API_URL}${img.public_url}`,
           filename: img.filename,
           dataFormatada,
-          user_favorite: img.favorite,
+          user_favorite: true,
           type: img.type
         };
       });

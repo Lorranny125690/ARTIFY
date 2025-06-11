@@ -51,6 +51,7 @@ export const AuthProvider = ({children}: any) => {
       
           const token = result.data.token;
           const username = result.data.User;
+          const status = result.data.statusCode;
           if (token) {
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             await SecureStore.setItemAsync("my-jwt", token);
