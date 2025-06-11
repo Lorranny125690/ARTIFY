@@ -4,7 +4,7 @@
     "slug": "Artify",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./src/assets/iconArtify.png",
+    "icon": "./src/assets/Logo.png",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {

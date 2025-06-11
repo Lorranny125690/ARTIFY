@@ -20,10 +20,8 @@ export function useFavoritos() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // pega todas as imagens
       const allImages = result.data.simplified || [];
 
-      // filtra só as favoritas
       const favorites = allImages.filter((img: any) => img.favorite === true);
 
       const imagesWithUrls: ImageType[] = favorites.map((img: any) => {

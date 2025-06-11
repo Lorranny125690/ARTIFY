@@ -70,10 +70,10 @@ export const VerificationScreen = () => {
         >
           {/* Botão Voltar */}
           <TouchableOpacity
-            onPress={() => navigation.navigate("Welcome")}
-            style={tw`absolute top-12 left-6`}
+            onPress={() => navigation.goBack()}
+            style={tw`absolute top-12 left-4 z-50`}
           >
-            <Text style={tw`text-white text-2xl`}>{'←'}</Text>
+            <ArrowLeft color="white" size={28} />
           </TouchableOpacity>
   
           {/* Imagem de topo */}

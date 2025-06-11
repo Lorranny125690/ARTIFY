@@ -16,7 +16,6 @@ import { DrawerNavigationProp } from "@react-navigation/drawer";
 import { useNavigation } from "@react-navigation/native";
 import { useImagesServices } from "./Services/MinhasImagens";
 import type { RootStackParamList } from "../../types/rootStackParamList";
-import { Star, StarOff } from "lucide-react-native";
 import { useImagesContext } from "../../contexts/ImageContext/imageContext";
 import AntDesign from "react-native-vector-icons/AntDesign";
 

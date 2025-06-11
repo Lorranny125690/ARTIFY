@@ -69,7 +69,9 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       const simplifiedList = result.data.simplified;
 
-      const imagesWithUrls: ImageType[] = simplifiedList.map((img: any) => {
+      const allimages = simplifiedList.filter((img: any) => img.type === "processed");
+
+      const imagesWithUrls: ImageType[] = allimages.map((img: any) => {
         const data = img.date ? new Date(img.date) : new Date();
         const dataFormatada = data.toLocaleDateString("pt-BR");
 

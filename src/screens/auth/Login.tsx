@@ -27,21 +27,38 @@ export const LoginScreen = () => {
   const [modalMsg, setModalMsg] = useState("");
 
   const login = async () => {
-    setPressed(true)
-    const result = await onLogin!(email, password);
-
-    if (!result || result.error) {
-      if (result?.statusCode === 404) {
-        setModalMsg("Erro ao tentar logar. Tente novamente.");
-        setModalVisible(true);
-        return;
-      }
+    setPressed(true);
   
-      setModalMsg("Email ou senha errados 😯! Digite novamente.");
+    if (!email || !password) {
+      setModalMsg("Preencha todos os campos.");
       setModalVisible(true);
       return;
     }
-  };
+  
+    const result = await onLogin!(email, password);
+  
+    if (!result || result.error) {
+      setModalMsg("Algo deu errado. Tente novamente.");
+      setModalVisible(true);
+      return;
+    }
+  
+    const status = result.data?.statusCode;
+  
+    if (status === 200) {
+      return;
+    }
+  
+    if (status === 404) {
+      setModalMsg("Email não encontrado.");
+    } else if (status === 500) {
+      setModalMsg("Erro desconhecido.");
+    } else {
+      setModalMsg("Email ou senha errados 😯! Digite novamente.");
+    }
+  
+    setModalVisible(true);
+  };  
 
   return (
     <ScrollView contentContainerStyle={tw`flex-1 bg-slate-900 items-center justify-center p-4`}>
@@ -53,8 +70,8 @@ export const LoginScreen = () => {
       </TouchableOpacity>
   
       <Image
-        source={require("../../assets/iconArtify.png")}
-        style={tw`w-80 h-80 mb-4`}
+        source={require("../../assets/Logo.png")}
+        style={tw`w-90 h-90`}
         resizeMode="contain"
       />
   
@@ -90,10 +107,10 @@ export const LoginScreen = () => {
       </TouchableOpacity>
   
       <TouchableOpacity
-        style={tw`bg-slate-800 py-2 px-10 rounded-lg mb-4 w-45 h-12 justify-center items-center`}
+        style={tw`bg-slate-800 rounded-4 px-18 py-2 items-center mb-4`}
         onPress={login}
       >
-        <Text style={tw`text-white text-lg font-semibold`}>Login</Text>
+        <Text style={tw`text-white text-sl font-semibold`}>Login</Text>
       </TouchableOpacity>
 
       <CustomModal

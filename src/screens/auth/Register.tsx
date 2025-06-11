@@ -28,23 +28,44 @@ export const SignupScreen = () => {
 
   const register = async () => {
     setPressed(true);
-
+  
+    if (!Email || !Password || !userName || !confirmPassword) {
+      setModalMsg("Preencha todos os campos!");
+      setModalVisible(true);
+      return;
+    }
+  
     if (Password !== confirmPassword) {
       setModalMsg("As senhas não coincidem! Dá uma olhada aí 😯");
       setModalVisible(true);
       return;
     }
-
+  
     const result = await onRegister!(Email, Password, userName);
-
-    if (result?.statusCode === 409 || result?.error) {
-      setModalMsg("Esse e-mail já está em uso! Tenta outro 😉");
+  
+    if (!result || result.error) {
+      setModalMsg("Algo deu errado. Tente novamente.");
       setModalVisible(true);
       return;
     }
-
-    await login(); 
-  };
+  
+    const status = result.data?.statusCode;
+  
+    if (status === 409) {
+      setModalMsg("Email já em uso 😳.");
+      setModalVisible(true);
+      return;
+    }
+  
+    if (status === 500) {
+      setModalMsg("Erro desconhecido.");
+      setModalVisible(true);
+      return;
+    }
+  
+    // Sucesso
+    await login();
+  };  
 
   return (
     <ScrollView contentContainerStyle={tw`flex-1 bg-slate-900 items-center justify-center px-4`}>
@@ -121,10 +142,10 @@ export const SignupScreen = () => {
 
       {/* Botão Cadastrar */}
       <TouchableOpacity 
-        style={tw`bg-slate-800 py-2 px-10 rounded-lg mb-4 w-45 h-12 justify-center items-center`}
+        style={tw`bg-slate-800 rounded-4 px-18 py-2 items-center mb-4`}
         onPress={register}
       >
-        <Text style={tw`text-white text-lg font-semibold`}>Cadastrar</Text>
+        <Text style={tw`text-white font-semibold`}>Cadastrar</Text>
       </TouchableOpacity>
 
       <CustomModal
