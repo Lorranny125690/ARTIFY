@@ -17,12 +17,25 @@ interface ImagesContextProps {
   fetchImages: () => void;
   loading: boolean;
   setImages: React.Dispatch<React.SetStateAction<ImageType[]>>;
-  uploadImage: (imageUri: string) => Promise<{ Id: string } | void>;
+  uploadImage: (imageUri: string, filterName: string) => Promise<{ Id: string } | void>;
   deleteImage: (image: ImageType) => Promise<void>;
   toggleFavorite: (image: ImageType) => Promise<void>;
   selectedFilter: string | null;
   setSelectedFilter: React.Dispatch<React.SetStateAction<string | null>>;
-  applyFilterToImage: (image: ImageType) => Promise<void>;
+
+  Grayscale: (image: ImageType) => Promise<{ id: string } | void>;
+  Negative: (image: ImageType) => Promise<{ id: string } | void>;
+  Blur: (image: ImageType, amount: number) => Promise<{ id: string } | void>;
+  Canny: (img: ImageType, amount: number) => Promise<{ id: string } | void>;
+  Pixelate: (image: ImageType) => Promise<{ id: string } | void>;
+  RGBBoost: (image: ImageType) => Promise<{ id: string } | void>;
+  SkinWhitening: (image: ImageType) => Promise<{ id: string } | void>;
+  Heat: (image: ImageType) => Promise<{ id: string } | void>;
+  Rescale: (img: ImageType, amount: number) => Promise<{ id: string } | void>;
+  Translate: (image: ImageType) => Promise<{ id: string } | void>;
+  Rotate: (image: ImageType) => Promise<{ id: string } | void>;
+  CardinalScale: (image: ImageType) => Promise<{ id: string } | void>;
+  Crop: (image: ImageType) => Promise<{ id: string } | void>;
 }
 
 const ImagesContext = createContext<ImagesContextProps | undefined>(undefined);
@@ -31,32 +44,6 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [images, setImages] = useState<ImageType[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
-  const FILTER_API_MAP: Record<string, string> = {
-    "Grayscale (Preto e Branco)": "grayscale",
-    "Sepia": "sepia",
-    "Filtro de Cartoon": "cartoon",
-    "Filtro de Cor Personalizada (RGB Boost)": "rgb_boost",
-    "Filtro de Inversão (Negative)": "negative",
-    "Filtro de Brilho e Contraste": "brightness_contrast",
-    "Filtro de Clareamento de Pele": "skin_whitening",
-    "Filtro de Calor (Thermal)": "thermal",
-    "Filtro de Desenho a Lápis": "pencil",
-    "Filtro de Pintura a Óleo": "oil_painting",
-    "Remove Background": "remove_background",
-    "Pixelização facial": "pixelate_face",
-    "Pixelização Total": "pixelate",
-    "Blur Facial": "blur_face",
-    "Remover Background em Vídeo": "remove_bg_video",
-    "Detecção de Rostos com IA": "face_detection_ai",
-    "Resize": "resize",
-    "Rotação": "rotate",
-    "Translação (warpAffine)": "translate",
-    "Escala (Cardinal)": "scale",
-    "Flip X": "flip_x",
-    "Cropping": "crop",
-    "Color Enhancer": "color_enhancer",
-    "Chromatic Aberration": "chromatic_aberration",
-  };
   const { authState } = useAuth();
 
   const fetchImages = async () => {
@@ -68,9 +55,7 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       });
 
       const simplifiedList = result.data.simplified;
-
       const imageProcessed = simplifiedList.filter((img: any) => img.type === 1);
-      console.log(simplifiedList)
 
       const imagesWithUrls: ImageType[] = imageProcessed.map((img: any) => {
         const data = img.date ? new Date(img.date) : new Date();
@@ -78,12 +63,10 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
         return {
           id: img.id,
-          uri: img.public_url.startsWith("http")
-            ? img.public_url
-            : `${API_URL}${img.public_url}`,
+          uri: img.public_url.startsWith("http") ? img.public_url : `${API_URL}${img.public_url}`,
           filename: img.filename,
           dataFormatada,
-          user_favorite: true,
+          user_favorite: img.user_favorite,
           type: img.type
         };
       });
@@ -103,37 +86,159 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, [authState?.authenticated]);
 
-  const uploadImage = async (imageUri: string): Promise<{ Id: string } | void> => {
+  const applyFilter = async (endpoint: string, image: ImageType): Promise<{ id: string } | void> => {
+    try {
+      const token = authState?.token;
+      if (!token) throw new Error("Token de autenticação ausente.");
+  
+      const response = await Axios.post(
+        `/processes/defined/${endpoint}`,
+        { image_id: image.id },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      const filteredId = response.data.id;
+      Alert.alert("Sucesso", `Filtro '${endpoint}' aplicado com sucesso!`);
+      await fetchImages();
+      return { id: filteredId };
+    } catch (error: any) {
+      console.error(`Erro ao aplicar filtro ${endpoint}:`, error?.response?.data?.error || error.message);
+      Alert.alert("Erro", `Não foi possível aplicar o filtro ${endpoint} à imagem.`);
+    }
+  };  
+
+  const Grayscale = (img: ImageType) => applyFilter("grayscale", img);
+  const Negative = (img: ImageType) => applyFilter("negative", img);
+  const Background = (img: ImageType) => applyFilter("bg_remove", img);
+  const Blur = async (img: ImageType, amount: number) => {
+    try {
+      const token = authState?.token;
+
+      const response = await Axios.post(
+        `/processes/defined/blur`,
+        {
+          image_id: img.id,
+          Amount: amount,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao aplicar blur:", error);
+    }
+  };
+  const Canny = async (img: ImageType, amount: number) => {
+    try {
+      const token = authState?.token;
+  
+      const response = await Axios.post(
+        `/processes/defined/canny`,
+        {
+          image_id: img.id,
+          Amount: amount,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao aplicar canny:", error);
+      Alert.alert("Erro", "Não foi possível aplicar o filtro Canny à imagem.");
+    }
+  };  
+  const Pixelate = (img: ImageType) => applyFilter("pixelate", img);
+  const RGBBoost = (img: ImageType) => applyFilter("rgb_boost", img);
+  const SkinWhitening = (img: ImageType) => applyFilter("skin_whitening", img);
+  const Heat = (img: ImageType) => applyFilter("heat", img);
+  const Rescale = async (img: ImageType, amount: number) => {
+    try {
+      const token = authState?.token;
+
+      const response = await Axios.post(
+        `/processes/defined/rescale`,
+        {
+          image_id: img.id,
+          Amount: amount,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao aplicar blur:", error);
+    }
+  };
+  const Translate = (img: ImageType) => applyFilter("translate", img);
+  const Rotate = (img: ImageType) => applyFilter("rotate", img);
+  const CardinalScale = (img: ImageType) => applyFilter("cardinal_scale", img);
+  const Crop = (img: ImageType) => applyFilter("crop", img);
+
+  const filterMap: { [key: string]: (img: ImageType) => Promise<{ id: string } | void> } = {
+    "Grayscale (Preto e Branco)": Grayscale,
+    "Filtro de Inversão (Negative)": Negative,
+    "Remove Background": Background,
+    "Pixelização Total": Pixelate,
+    "Filtro de Clareamento de Pele": SkinWhitening,
+    "Filtro de Calor (Thermal)": Heat,
+    "RGB Boost": RGBBoost,
+    "Blur": (img) => Blur(img, 5),
+    "Canny": (img) => Canny(img, 10),
+    "Rescale": (img) => Rescale(img, 2),
+  };  
+
+  const uploadImage = async (imageUri: string, filterName: string): Promise<{ Id: string } | void> => {
     try {
       const token = authState?.token;
       if (!token) {
         Alert.alert("Erro", "Usuário não autenticado.");
         return;
       }
-  
+
       const formData = new FormData();
       formData.append("file", {
         uri: imageUri,
         type: "image/jpeg",
         name: `image_${Date.now()}.jpg`,
       } as any);
-  
+
       const response = await Axios.post("/images", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
       });
-  
-      if (response.status === 201) {
-        const image = response.data.image;
-        Alert.alert("Sucesso", `Imagem enviada com sucesso! ID: ${image.Id}`);
-        console.log("Imagem salva:", image);
 
-        await applyFilterToImage({ id: image.Id } as ImageType);
-        
+      if (response.status === 201) {
+        const imageId = response.data.image.Id;
+        Alert.alert("Sucesso", `Imagem enviada com sucesso!`);
+
+        let filterResult;
+
+        const imageObj = { id: imageId } as ImageType;
+        if (filterMap[filterName]) {
+          filterResult = await filterMap[filterName](imageObj);
+        }
+
         await fetchImages();
-        return { Id: image.Id };
+        return { Id: filterResult?.id ?? imageId};
       } else {
         Alert.alert("Erro", "Erro ao enviar a imagem.");
       }
@@ -141,7 +246,7 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       console.warn("Erro ao guardar imagem:", error);
       Alert.alert("Erro", error?.response?.data?.msg || "Erro ao enviar imagem.");
     }
-  };   
+  };
 
   const deleteImage = async (imageToDelete: ImageType) => {
     Alert.alert(
@@ -156,18 +261,16 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
               const token = authState?.token;
               if (!token) throw new Error("Token não encontrado.");
 
-              await Axios.delete(`/images/${imageToDelete.id}`, {
+              await Axios.delete(`/processes/${imageToDelete.id}`, {
                 headers: { Authorization: `Bearer ${token}` },
               });
 
-              const updatedImages = images.filter((img) => img.id !== imageToDelete.id);
-              setImages(updatedImages);
-
+              setImages((prev) => prev.filter((img) => img.id !== imageToDelete.id));
               Alert.alert("Sucesso", "Imagem excluída com sucesso.");
             } catch (e: any) {
               console.warn("Erro ao excluir imagem:", e?.response?.data?.msg || e?.message || "Erro desconhecido");
-              Alert.alert("Erro", e?.response?.data?.msg || e?.message || "Não foi possível excluir a imagem.");
-            }            
+              Alert.alert("Erro", "Não foi possível excluir a imagem.");
+            }
           },
         },
       ],
@@ -177,64 +280,29 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const toggleFavorite = async (imageToToggle: ImageType) => {
     try {
-      const newFavoriteStatus = !imageToToggle.user_favorite;
       const token = authState?.token;
-
       if (!token) throw new Error("Token não encontrado.");
 
+      const newFavoriteStatus = !imageToToggle.user_favorite;
+
       await Axios.put(
-        "/images",
-        {
-          imageId: imageToToggle.id,
-          user_favorite: newFavoriteStatus,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        `/processes/${imageToToggle.id}`,
+        { favorite: newFavoriteStatus },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      const updatedImages = images.map((img) =>
-        img.id === imageToToggle.id ? { ...img, user_favorite: newFavoriteStatus } : img
+      setImages((prev) =>
+        prev.map((img) =>
+          img.id === imageToToggle.id ? { ...img, user_favorite: newFavoriteStatus } : img
+        )
       );
 
-      setImages(updatedImages);
-
-      Alert.alert(
-        "Sucesso",
-        newFavoriteStatus ? "Imagem favoritada!" : "Imagem desmarcada como favorita."
-      );
+      Alert.alert("Sucesso", newFavoriteStatus ? "Imagem favoritada!" : "Imagem removida dos favoritos.");
     } catch (error: any) {
       console.error("Erro ao favoritar imagem:", error?.response?.data?.msg || error.message);
       Alert.alert("Erro", "Não foi possível atualizar a imagem.");
     }
   };
-
-  const applyFilterToImage = async (image: ImageType) => {
-    try {
-  
-      const token = authState?.token;
-      if (!token) throw new Error("Token de autenticação ausente.");
-  
-      await Axios.post(
-        `/processes/defined/grayscale`,
-        { image_id: image.id },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-  
-      Alert.alert("Sucesso", `Filtro aplicado com sucesso!`);
-      await fetchImages();
-    } catch (error: any) {
-      console.error("Erro ao aplicar filtro:", error?.response?.data?.msg || error.message);
-      Alert.alert("Erro", "Não foi possível aplicar o filtro à imagem.");
-    }
-  };  
 
   return (
     <ImagesContext.Provider
@@ -246,9 +314,21 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         uploadImage,
         deleteImage,
         toggleFavorite,
-        applyFilterToImage,
         selectedFilter,
-        setSelectedFilter
+        setSelectedFilter,
+        Grayscale,
+        Negative,
+        Blur,
+        Canny,
+        Pixelate,
+        RGBBoost,
+        SkinWhitening,
+        Heat,
+        Rescale,
+        Translate,
+        Rotate,
+        CardinalScale,
+        Crop
       }}
     >
       {children}

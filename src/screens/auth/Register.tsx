@@ -67,7 +67,7 @@ export const SignupScreen = () => {
   };  
 
   return (
-    <ScrollView contentContainerStyle={tw`flex-1 bg-slate-900 items-center justify-center px-4`}>
+    <ScrollView contentContainerStyle={tw`flex-1 bg-slate-900 items-center px-4`}>
       <TouchableOpacity
         onPress={() => navigation.navigate("Welcome")}
         style={tw`absolute top-12 left-4 z-50`}
@@ -77,7 +77,7 @@ export const SignupScreen = () => {
 
       <Image
         source={require("../../assets/iconArtify.png")}
-        style={tw`w-80 h-80`} 
+        style={tw`w-80 h-80 mt-10`} 
         resizeMode="contain"
       />
 

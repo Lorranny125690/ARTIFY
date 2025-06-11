@@ -21,7 +21,7 @@ export const EmailScreen = () => {
       
       <Image
         source={require("../../assets/Logo.png")}
-        style={tw`w-90 h-90`} 
+        style={tw`w-90 h-90 mt-10`} 
         resizeMode="contain"
       />   
 

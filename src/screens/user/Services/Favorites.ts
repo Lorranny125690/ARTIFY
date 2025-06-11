@@ -15,25 +15,30 @@ export function useFavoritos() {
     setLoading(true);
     try {
       const token = authState?.token;
-
-      const result = await Axios.get("/images", {
+      
+      const result = await Axios.get("/processes/favorite", {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log({
+        Description:"Got a result",
+        resultType:result.data,
+        resultStatus:result.status
+      })
+      // Pega o array de imagens no formato novo
+      const allImages = result.data.images || [];
 
-      const allImages = result.data.simplified || [];
-
-      const favorites = allImages.filter((img: any) => img.favorite === true);
-
-      const imagesWithUrls: ImageType[] = favorites.map((img: any) => {
-        const data = img.date ? new Date(img.date) : new Date();
+      // Mapeia para o formato ImageType esperado
+      const imagesWithUrls: ImageType[] = allImages.map((img: any) => {
+        const data = img.createdAt ? new Date(img.createdAt) : new Date();
         const dataFormatada = data.toLocaleDateString("pt-BR");
+
+        // filename pode não existir na nova API, tenta extrair do URL
+        const filename = img.imageUrl.split("/").pop() || "unknown";
 
         return {
           id: img.id,
-          uri: img.public_url.startsWith("http")
-            ? img.public_url
-            : `${API_URL}${img.public_url}`,
-          filename: img.filename,
+          uri: img.imageUrl.startsWith("http") ? img.imageUrl : `${API_URL}${img.imageUrl}`,
+          filename,
           dataFormatada,
           user_favorite: true,
         };
@@ -41,7 +46,7 @@ export function useFavoritos() {
 
       setImages(imagesWithUrls);
     } catch (e: any) {
-      console.warn("Erro ao buscar imagens:", e?.response?.data?.msg || e.message);
+      console.warn("Erro ao buscar imagens:", e?.response?.data?.error || e.message);
       Alert.alert("Erro", "Não foi possível carregar as imagens.");
     } finally {
       setLoading(false);

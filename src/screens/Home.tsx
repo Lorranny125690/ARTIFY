@@ -14,6 +14,7 @@ import * as ImagePicker from "expo-image-picker";
 import tw from "twrnc";
 import { RecentProcessedImages } from "./tools/functions/recentProcess";
 import type { Images } from "../types/entitys/images";
+import { useAuth } from "../contexts/AuthContext/authenticatedUser";
 
 type Item = {
   name: string;
@@ -69,10 +70,13 @@ export const HomeScreen: React.FC = () => {
   const navigation = useNavigation<DrawerNavigationProp<any>>();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [recentEdits,setRecentEdits] = useState<Images[]>([])
+  const { authState } = useAuth();
+
+  const token = authState?.token;
 
   useEffect(() => {
     const fetchImages = async () => {
-      const loadRecentImages = await RecentProcessedImages();
+      const loadRecentImages = await RecentProcessedImages(token);
       setRecentEdits(loadRecentImages);
     };
   
@@ -123,8 +127,8 @@ export const HomeScreen: React.FC = () => {
                   <View style={tw`bg-slate-700 m-2 p-4 rounded-lg w-29 mx-2 items-center shadow-lg`}>
                     <Image 
                       source={
-                        item.stored_filepath 
-                          ? { uri: item.stored_filepath } 
+                        item.public_url
+                          ? { uri: item.public_url } 
                           : require("../assets/icon.png")
                       }
                       style={tw`w-16 h-16`} 
@@ -142,32 +146,13 @@ export const HomeScreen: React.FC = () => {
           )}
       </View>
 
-      {/* Upload de imagem */}
-      <TouchableOpacity
-        onPress={handleImageUpload}
-        style={tw`mb-10 bg-slate-800 p-4 rounded-lg mt-6 mx-4 items-center justify-center h-64 border-2 border-dashed border-gray-500`}
-      >
-        {selectedImage ? (
-          <Image source={{ uri: selectedImage }} style={tw`w-full h-full rounded-lg`} resizeMode="cover" />
-        ) : (
-          <>
-            <Icon name="cloud-upload" size={40} color="#fff" />
-            <Text style={tw`text-white mt-2`}>Upload de imagem</Text>
-            <Text style={tw`text-gray-400 text-xs mt-1`}>Máximo 5MB</Text>
-            <Text style={tw`text-gray-300 text-sm text-center mt-2 px-4`}>
-              Aplique filtros incríveis, ajuste luz e cor, faça edições e muito mais. Tudo em um só lugar, rápido e intuitivo.
-            </Text>
-          </>
-        )}
-      </TouchableOpacity>
-
       {/* Ferramentas agrupadas */}
       {toolSections.map((section) => (
         <Section onPress={(item) => alert(`${item.name} ainda será implementado!!!`)} key={section.title} title={section.title} data={section.data} />
       ))}
 
       {/* Footer */}
-      <View style={tw`mt-8 py-4 gap-10 bg-slate-800 items-center justify-center top-10`}>
+      <View style={tw`mt-8 py-4 gap-10 bg-slate-800 items-center justify-center top-30`}>
         <View style={tw`flex-row top-2 items-center`}>
           <Text style={tw`text-white mr-30 text-xl font-semibold mb-2`}>Redes sociais</Text>
           <Image source={require("../assets/iconArtify.png")} style={tw`w-20 h-9`}/>

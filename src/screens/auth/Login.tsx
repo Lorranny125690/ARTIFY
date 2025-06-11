@@ -61,7 +61,7 @@ export const LoginScreen = () => {
   };  
 
   return (
-    <ScrollView contentContainerStyle={tw`flex-1 bg-slate-900 items-center justify-center p-4`}>
+    <ScrollView contentContainerStyle={tw`flex-1 bg-slate-900 items-center p-4`}>
       <TouchableOpacity
         onPress={() => navigation.navigate("Welcome")}
         style={tw`absolute top-12 left-4 z-50`}
@@ -71,7 +71,7 @@ export const LoginScreen = () => {
   
       <Image
         source={require("../../assets/Logo.png")}
-        style={tw`w-90 h-90`}
+        style={tw`w-90 h-90 m-10`}
         resizeMode="contain"
       />
   

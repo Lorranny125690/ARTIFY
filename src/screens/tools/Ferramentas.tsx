@@ -29,7 +29,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useAuth } from "../../contexts/AuthContext/authenticatedUser";
 import Axios from "../../scripts/axios";
-import { useImagesContext } from "../../contexts/ImageContext/imageContext";
+import { useImagesContext, type ImageType } from "../../contexts/ImageContext/imageContext";
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -60,7 +60,7 @@ const toolSections: { title: string; data: Item[] }[] = [
       { name: "Remove Background", icon: "scissors" },
       { name: "Pixelização facial", icon: "th-large" },
       { name: "Pixelização Total", icon: "th" },
-      { name: "Blur Facial", icon: "eye-slash" },
+      { name: "Blur", icon: "eye-slash" },
       { name: "Remover Background em Vídeo", icon: "video-camera" },
       { name: "Detecção de Rostos com IA", icon: "user-circle" },
     ],
@@ -91,16 +91,12 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
   const { authState } = useAuth();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const token = authState?.token;
-  const { uploadImage, images, applyFilterToImage, selectedFilter, setSelectedFilter } = useImagesContext();
+  const { uploadImage, images, selectedFilter, setSelectedFilter } = useImagesContext();
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedTool, setSelectedTool] = useState<Item | null>(null);
+  const [selectedTool, setSelectedTool] = useState<Item>();
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
-  const escolherFiltro = (nomeDoFiltro: string) => {
-    setSelectedFilter(nomeDoFiltro);
-  };
 
   const onToolPress = (tool: Item) => {
     setSelectedTool(tool);
@@ -111,24 +107,23 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
 
   const handleCloseModal = () => {
     setModalVisible(false);
-    setSelectedTool(null);
   };
 
-  const handleUploadAndFilter = async (imageUri: string) => {
+  const handleUploadAndFilter = async (imageUri: string, selectedFilter: string) => {
     if (!selectedFilter) {
       Alert.alert("Erro", "Selecione um filtro antes.");
       return;
     }
   
-    const uploadedImage = await uploadImage(imageUri);
+    const uploadedImage = await uploadImage(imageUri, selectedFilter);
   
-    if (!uploadedImage) {
+    if (!uploadedImage || !uploadedImage.Id) {
       Alert.alert("Erro", "Falha ao enviar imagem.");
       return;
     }
   
-    navigation.navigate("Photo", { imageId: uploadedImage.Id });
-  };  
+    // navigation.navigate("Photo", { imageId: uploadedImage.Id });
+  };   
 
   return (
     <View style={tw`mt-6 px-4`}>
@@ -175,7 +170,7 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
                 onPress={async () => {
                   const uri = await openCamera();
                   if (uri) {
-                    await handleUploadAndFilter(uri);
+                    await handleUploadAndFilter(uri, String(selectedFilter));
                     setModalVisible(false);
                   }
                 }}                
@@ -189,7 +184,7 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
                 onPress={async () => {
                   const uri = await openGallery();
                   if (uri) {
-                    await handleUploadAndFilter(uri);
+                    await handleUploadAndFilter(uri, String(selectedFilter));
                     setModalVisible(false);
                   }
                 }}
