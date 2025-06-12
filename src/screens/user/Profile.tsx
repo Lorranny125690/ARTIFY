@@ -13,9 +13,34 @@ import { useNavigation } from "@react-navigation/native";
 import type { StackNavigationProp } from "@react-navigation/stack";
 import { CircleUserRound } from "lucide-react-native";
 import type { RootStackParamList } from "../../types/rootStackParamList";
+import { useAuth } from "../../contexts/AuthContext/authenticatedUser";
+import Axios from "../../scripts/axios";
 
 export function UserProfile() {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const { authState, onLogout } = useAuth();
+  const [userName, setUserName] = useState<string | undefined>();
+  const [loading, setLoading] = useState<boolean>(true);
+
+  const myUser = async () => {
+    try {
+      const token = authState?.token
+      
+      const result = await Axios.get(`/user`,{
+        headers:{
+          Authorization:`Bearer ${token}`
+        }
+      })
+      console.log(result.data);
+      
+      const username = result.data.user.name;
+      setUserName(username)
+    } catch (e: any) {
+      console.warn("Erro ao buscar usuário:", e?.response?.data?.msg || e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const [favoritos] = useState([
     {
@@ -53,7 +78,7 @@ export function UserProfile() {
             <CircleUserRound color="#334155" size={45} />
           </View>
           <View>
-            <Text style={tw`text-white text-base font-semibold`}>Thierrir Alencar</Text>
+            <Text style={tw`text-white text-base font-semibold`}>{userName}</Text>
             <Text style={tw`text-slate-400 text-sm`}>Usuário ativo</Text>
           </View>
         </View>
