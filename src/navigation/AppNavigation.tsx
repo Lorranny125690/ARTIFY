@@ -6,11 +6,11 @@ import { WelcomeScreen } from "../screens/welcome";
 import { AuthStack } from "./Rotas/AuthStack";
 import { HomeDrawer } from "./Rotas/HomeDrawer";
 import { Favorito } from "../screens/user/Favorites";
+import { LastProcess } from "../screens/user/Historico"
 import { ImagePreviewScreen } from "../screens/tools/functions/preview/Preview";
 import type { RootStackParamList } from "../types/rootStackParamList";
 import { useAuth } from "../contexts/AuthContext/authenticatedUser";
 import { ImagesProvider } from "../contexts/ImageContext/imageContext";
-import { FilterProvider } from "../screens/tools/functions/Filters";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -18,7 +18,7 @@ export function RootNavigator() {
   const { authState, onLogout } = useAuth();
   
   return (
-    <ImagesProvider><FilterProvider><Stack.Navigator
+    <ImagesProvider><Stack.Navigator
       screenOptions={{
         headerShown: false,
         animation: 'fade',
@@ -42,12 +42,12 @@ export function RootNavigator() {
           <Stack.Screen name="Home" component={HomeDrawer} />
           <Stack.Screen name="Photo" component={ImagePreviewScreen} />
           <Stack.Screen name="Favoritos" component={Favorito}/>
+          <Stack.Screen name="Historico" component={LastProcess}/>
         </>
       ) : (
         <Stack.Screen name="Auth" component={AuthStack} />
       )}
     </Stack.Navigator>
-    </FilterProvider>
   </ImagesProvider>
   );
 }

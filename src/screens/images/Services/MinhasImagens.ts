@@ -59,11 +59,11 @@ export function useImagesServices() {
     setModalVisible(false);
   };
 
-  const handleFavorite = () => {
+  const handleFavorite = async () => {
     if (selectedImageIndex === null) return;
-    toggleFavorite(images[selectedImageIndex]);
+    await toggleFavorite(images[selectedImageIndex]);
     setModalVisible(false);
-  };
+  };  
 
   const handleImageSave = async () => {
     if (selectedImageIndex === null) return;

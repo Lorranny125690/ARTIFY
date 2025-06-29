@@ -45,8 +45,8 @@ export function Favorito() {
     loading,
     modalVisible,
     selectedImageIndex,
-    openModal,
     setModalVisible,
+    openModal,
   } = useFavoritos();
 
   const {
@@ -144,15 +144,6 @@ export function Favorito() {
                   <TouchableOpacity style={tw`items-center`} onPress={handleImageSave}>
                     <Icon name="save" size={28} color="#62748E" />
                     <Text style={tw`text-white text-xs`}>Download</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity style={tw`items-center`} onPress={() => handleFavorite()}>
-                    {selectedImage.user_favorite ? (
-                      <AntDesign name="star" size={28} color="#FFEB3B" />
-                    ) : (
-                      <AntDesign name="staro" size={28} color="#fff" />
-                    )}
-                    <Text style={tw`text-white text-xs`}>Favoritar</Text>
                   </TouchableOpacity>
                 </View>
               </View>

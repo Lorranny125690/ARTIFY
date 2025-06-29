@@ -15,38 +15,31 @@ export function useFavoritos() {
     setLoading(true);
     try {
       const token = authState?.token;
-      
-      const result = await Axios.get("/processes/favorite", {
+      const result = await Axios.get("/images", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log({
-        Description:"Got a result",
-        resultType:result.data,
-        resultStatus:result.status
-      })
-      // Pega o array de imagens no formato novo
-      const allImages = result.data.images || [];
 
-      // Mapeia para o formato ImageType esperado
-      const imagesWithUrls: ImageType[] = allImages.map((img: any) => {
-        const data = img.createdAt ? new Date(img.createdAt) : new Date();
+      const simplifiedList = result.data.simplified;
+      const imageProcessed = simplifiedList.filter((img: any) => img.type === 1);
+
+      const imagesWithUrls: ImageType[] = imageProcessed.map((img: any) => {
+        const data = img.date ? new Date(img.date) : new Date();
         const dataFormatada = data.toLocaleDateString("pt-BR");
-
-        // filename pode não existir na nova API, tenta extrair do URL
-        const filename = img.imageUrl.split("/").pop() || "unknown";
-
+        const agora = new Date()
+      
         return {
           id: img.id,
-          uri: img.imageUrl.startsWith("http") ? img.imageUrl : `${API_URL}${img.imageUrl}`,
-          filename,
+          uri: img.public_url.startsWith("http") ? img.public_url : `${API_URL}${img.public_url}`,
+          filename: `${agora.getFullYear()}-${agora.getMonth()+1}-${agora.getDate()}_${agora.getHours()}-${agora.getMinutes()}-${agora.getSeconds()}`,        
           dataFormatada,
-          user_favorite: true,
+          favorite: true,
+          type: img.type
         };
       });
 
       setImages(imagesWithUrls);
     } catch (e: any) {
-      console.warn("Erro ao buscar imagens:", e?.response?.data?.error || e.message);
+      console.warn("Erro ao buscar imagens:", e?.response?.data?.msg || e.message);
       Alert.alert("Erro", "Não foi possível carregar as imagens.");
     } finally {
       setLoading(false);

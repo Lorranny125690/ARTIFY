@@ -2,14 +2,17 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { Alert } from "react-native";
 import { API_URL, useAuth } from "../AuthContext/authenticatedUser";
 import Axios from "../../scripts/axios";
+import { useNavigation } from "@react-navigation/native";
+import type { StackNavigationProp } from "@react-navigation/stack";
+import type { RootStackParamList } from "../../types/rootStackParamList";
 
 export type ImageType = {
-  type: string;
+  type: number;
   id: string;
   uri: string;
   filename: string;
   dataFormatada: string;
-  user_favorite: boolean;
+  favorite: boolean;
 };
 
 interface ImagesContextProps {
@@ -22,6 +25,7 @@ interface ImagesContextProps {
   toggleFavorite: (image: ImageType) => Promise<void>;
   selectedFilter: string | null;
   setSelectedFilter: React.Dispatch<React.SetStateAction<string | null>>;
+  getProcessamentoPorId: (id: string) => Promise<any>;
 
   Grayscale: (image: ImageType) => Promise<{ id: string } | void>;
   Negative: (image: ImageType) => Promise<{ id: string } | void>;
@@ -36,6 +40,7 @@ interface ImagesContextProps {
   Rotate: (image: ImageType) => Promise<{ id: string } | void>;
   CardinalScale: (image: ImageType) => Promise<{ id: string } | void>;
   Crop: (image: ImageType) => Promise<{ id: string } | void>;
+  Background: (image: ImageType) => Promise<{ id: string } | void>;
 }
 
 const ImagesContext = createContext<ImagesContextProps | undefined>(undefined);
@@ -60,17 +65,17 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const imagesWithUrls: ImageType[] = imageProcessed.map((img: any) => {
         const data = img.date ? new Date(img.date) : new Date();
         const dataFormatada = data.toLocaleDateString("pt-BR");
-
+        const agora = new Date()
+      
         return {
           id: img.id,
           uri: img.public_url.startsWith("http") ? img.public_url : `${API_URL}${img.public_url}`,
-          filename: img.filename,
+          filename: `${agora.getFullYear()}-${agora.getMonth()+1}-${agora.getDate()}_${agora.getHours()}-${agora.getMinutes()}-${agora.getSeconds()}`,        
           dataFormatada,
-          user_favorite: img.user_favorite,
+          favorite: img.favorite ?? false,
           type: img.type
         };
-      });
-
+      });      
       setImages(imagesWithUrls);
     } catch (e: any) {
       console.warn("Erro ao buscar imagens:", e?.response?.data?.msg || e.message);
@@ -110,21 +115,25 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       console.error(`Erro ao aplicar filtro ${endpoint}:`, error?.response?.data?.error || error.message);
       Alert.alert("Erro", `Não foi possível aplicar o filtro ${endpoint} à imagem.`);
     }
-  };  
+  };
 
   const Grayscale = (img: ImageType) => applyFilter("grayscale", img);
   const Negative = (img: ImageType) => applyFilter("negative", img);
   const Background = (img: ImageType) => applyFilter("bg_remove", img);
-  const Blur = async (img: ImageType, amount: number) => {
+  const Blur = async (img: ImageType, Amount: number): Promise<{ id: string } | void> => {
     try {
       const token = authState?.token;
-
+      if (!token) {
+        Alert.alert("Erro", "Token de autenticação ausente.");
+        return;
+      }
+  
+      const payload = { image_id: img.id, Amount };
+      console.log("Enviando payload para blur:", payload);
+  
       const response = await Axios.post(
         `/processes/defined/blur`,
-        {
-          image_id: img.id,
-          Amount: amount,
-        },
+        payload,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -132,21 +141,34 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         }
       );
   
-      return response.data;
-    } catch (error) {
-      console.error("Erro ao aplicar blur:", error);
+      console.log("Resposta do blur:", response.data);
+  
+      await fetchImages();
+      return { id: response.data.id };
+    } catch (error: any) {
+      console.error("Erro ao aplicar blur:", error?.response?.data || error.message);
+      Alert.alert("Erro", "Não foi possível aplicar o filtro de desfoque.");
     }
   };
-  const Canny = async (img: ImageType, amount: number) => {
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const Canny = async (img: ImageType, amount: number): Promise<{ id: string } | void> => {
     try {
       const token = authState?.token;
+      if (!token) {
+        Alert.alert("Erro", "Token de autenticação ausente.");
+        return;
+      }
+  
+      const payload = {
+        image_id: img.id,
+        Amount: amount
+      };
+  
+      console.log("Enviando payload para canny:", payload);
   
       const response = await Axios.post(
         `/processes/defined/canny`,
-        {
-          image_id: img.id,
-          Amount: amount,
-        },
+        payload,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -154,25 +176,43 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         }
       );
   
-      return response.data;
-    } catch (error) {
-      console.error("Erro ao aplicar canny:", error);
-      Alert.alert("Erro", "Não foi possível aplicar o filtro Canny à imagem.");
+      console.log("Resposta do canny:", response.data);
+  
+      // Aguarda o processamento concluir e busca novamente a imagem original
+      const processedImage = await Axios.get(`/images/${img.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      const processedId = processedImage.data?.image?.id;
+  
+      if (processedId) {
+        navigation.navigate("Photo", { imageId: processedId });
+      }
+  
+      await fetchImages();
+  
+      return { id: processedId };
+    } catch (error: any) {
+      console.error("Erro ao aplicar canny:", error?.response?.data || error.message);
+      Alert.alert("Erro", "Não foi possível aplicar o filtro de borda (Canny).");
     }
-  };  
+  };
+  
   const Pixelate = (img: ImageType) => applyFilter("pixelate", img);
   const RGBBoost = (img: ImageType) => applyFilter("rgb_boost", img);
-  const SkinWhitening = (img: ImageType) => applyFilter("skin_whitening", img);
+  const SkinWhitening = (img: ImageType) => applyFilter("skin_Whitening", img);
   const Heat = (img: ImageType) => applyFilter("heat", img);
-  const Rescale = async (img: ImageType, amount: number) => {
+  const Rescale = async (img: ImageType, Scale: number) => {
     try {
       const token = authState?.token;
 
       const response = await Axios.post(
-        `/processes/defined/rescale`,
+        `/processes/defined/reescale`,
         {
           image_id: img.id,
-          Amount: amount,
+          scale: Scale,
         },
         {
           headers: {
@@ -198,10 +238,14 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     "Pixelização Total": Pixelate,
     "Filtro de Clareamento de Pele": SkinWhitening,
     "Filtro de Calor (Thermal)": Heat,
-    "RGB Boost": RGBBoost,
+    "Filtro de Cor Personalizada (RGB Boost)": RGBBoost,
     "Blur": (img) => Blur(img, 5),
-    "Canny": (img) => Canny(img, 10),
-    "Rescale": (img) => Rescale(img, 2),
+    "Resize": (img) => Rescale(img, 2),
+    "Translação (warpAffine)": Translate,
+    "Rotação": Rotate,
+    "Escala (Cardinal)": CardinalScale,
+    "Cropping": Crop,
+    "Filtro de Pintura a Óleo": (img) => Canny(img, 5)
   };  
 
   const uploadImage = async (imageUri: string, filterName: string): Promise<{ Id: string } | void> => {
@@ -248,6 +292,19 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
 
+  const getProcessamentoPorId = async (id: string) => {
+    try {
+      const token = authState?.token;
+      const response = await Axios.get(`/processes/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      console.log("Processamento:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao buscar processamento:", error);
+    }
+  };  
+
   const deleteImage = async (imageToDelete: ImageType) => {
     Alert.alert(
       "Excluir imagem",
@@ -277,32 +334,26 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       { cancelable: false }
     );
   };
-
-  const toggleFavorite = async (imageToToggle: ImageType) => {
+  
+  const toggleFavorite = async (image: ImageType) => {
+    const favoriteValue = !image.favorite;
+  
     try {
-      const token = authState?.token;
-      if (!token) throw new Error("Token não encontrado.");
-
-      const newFavoriteStatus = !imageToToggle.user_favorite;
-
-      await Axios.put(
-        `/processes/${imageToToggle.id}`,
-        { favorite: newFavoriteStatus },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
+      await Axios.put(`processes/${image.id}`, {
+        favorite: favoriteValue,
+      });
+  
       setImages((prev) =>
         prev.map((img) =>
-          img.id === imageToToggle.id ? { ...img, user_favorite: newFavoriteStatus } : img
+          img.id === image.id ? { ...img, favorite: favoriteValue } : img
         )
       );
-
-      Alert.alert("Sucesso", newFavoriteStatus ? "Imagem favoritada!" : "Imagem removida dos favoritos.");
-    } catch (error: any) {
-      console.error("Erro ao favoritar imagem:", error?.response?.data?.msg || error.message);
-      Alert.alert("Erro", "Não foi possível atualizar a imagem.");
+    } catch (e) {
+      console.error("Erro ao favoritar:", e);
+      Alert.alert("Erro", "Não foi possível alterar o favorito.");
     }
   };
+    
 
   return (
     <ImagesContext.Provider
@@ -316,6 +367,7 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         toggleFavorite,
         selectedFilter,
         setSelectedFilter,
+        getProcessamentoPorId,
         Grayscale,
         Negative,
         Blur,
@@ -328,7 +380,8 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         Translate,
         Rotate,
         CardinalScale,
-        Crop
+        Crop,
+        Background
       }}
     >
       {children}

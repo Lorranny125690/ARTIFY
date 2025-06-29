@@ -110,7 +110,8 @@ export function UserProfile() {
           style={tw`bg-slate-800 p-3 rounded-lg items-center`}>
             <Text style={tw`text-white text-base`}>Ver todos os favoritos</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={tw`bg-slate-800 p-3 rounded-lg items-center`}>
+          <TouchableOpacity style={tw`bg-slate-800 p-3 rounded-lg items-center`}
+            onPress={() => navigation.navigate("Historico")}>
             <Text style={tw`text-white text-base`}>Ver histórico</Text>
           </TouchableOpacity>
         </View>

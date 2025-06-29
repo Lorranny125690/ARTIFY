@@ -63,7 +63,7 @@ export const AuthProvider = ({children}: any) => {
       
           return result;
         } catch (e) {
-          return { error: true, msg: (e as any).response?.data?.msg || "Erro ao registrar" };
+            return { error: true, msg: (e as any).response?.data?.msg || "Erro ao registrar", status: (e as any).response?.status };
         }
     }
 

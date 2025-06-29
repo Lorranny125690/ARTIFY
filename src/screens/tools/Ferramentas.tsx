@@ -21,12 +21,6 @@ import { openGallery } from "./functions/OpenGallery";
 import { RecentProcessedImages } from "./functions/recentProcess";
 import { Images } from "../../types/entitys/images";
 import { Camera } from "lucide-react-native";
-import Animated, {
-  FadeInUp,
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-} from "react-native-reanimated";
 import { useAuth } from "../../contexts/AuthContext/authenticatedUser";
 import Axios from "../../scripts/axios";
 import { useImagesContext, type ImageType } from "../../contexts/ImageContext/imageContext";
@@ -91,7 +85,7 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
   const { authState } = useAuth();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const token = authState?.token;
-  const { uploadImage, images, selectedFilter, setSelectedFilter } = useImagesContext();
+  const { uploadImage, images, selectedFilter, setSelectedFilter, getProcessamentoPorId } = useImagesContext();
 
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedTool, setSelectedTool] = useState<Item>();
@@ -107,6 +101,7 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
 
   const handleCloseModal = () => {
     setModalVisible(false);
+    setSelectedTool(undefined);
   };
 
   const handleUploadAndFilter = async (imageUri: string, selectedFilter: string) => {
@@ -121,8 +116,6 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
       Alert.alert("Erro", "Falha ao enviar imagem.");
       return;
     }
-  
-    // navigation.navigate("Photo", { imageId: uploadedImage.Id });
   };   
 
   return (

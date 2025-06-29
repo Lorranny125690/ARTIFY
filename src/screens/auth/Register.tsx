@@ -43,27 +43,23 @@ export const SignupScreen = () => {
   
     const result = await onRegister!(Email, Password, userName);
   
-    const status = result?.data?.statusCode;
+    const status = Number(result?.status);
+    console.log(status)
 
-    if (!result || result.error) {
-      setModalMsg("Algo deu errado. Tente novamente.");
-      setModalVisible(true);
-      return;
+    if (status === 201) {
+      await login();
     }
   
     if (status === 409) {
-      setModalMsg("Email já em uso 😳.");
+      setModalMsg("Email já em uso 😳");
       setModalVisible(true);
-      return;
-    }
-  
-    if (status === 500) {
+    } else if (status === 500) {
       setModalMsg("Erro desconhecido.");
       setModalVisible(true);
-      return;
+    } else {
+      setModalMsg("Email ou senha errados 😯! Digite novamente.");
     }
     
-    await login();
   };  
 
   return (
