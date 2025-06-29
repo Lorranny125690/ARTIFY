@@ -178,22 +178,16 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   
       console.log("Resposta do canny:", response.data);
   
-      // Aguarda o processamento concluir e busca novamente a imagem original
-      const processedImage = await Axios.get(`/images/${img.id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-  
-      const processedId = processedImage.data?.image?.id;
-  
-      if (processedId) {
-        navigation.navigate("Photo", { imageId: processedId });
+      const processedUrl = response.data?.image;
+      console.log(processedUrl)
+
+      if (processedUrl) {
+        navigation.navigate("Photo", { imageId: processedUrl });
       }
   
       await fetchImages();
   
-      return { id: processedId };
+      return { id: processedUrl };
     } catch (error: any) {
       console.error("Erro ao aplicar canny:", error?.response?.data || error.message);
       Alert.alert("Erro", "Não foi possível aplicar o filtro de borda (Canny).");
@@ -334,7 +328,7 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       { cancelable: false }
     );
   };
-  
+
   const toggleFavorite = async (image: ImageType) => {
     const favoriteValue = !image.favorite;
   

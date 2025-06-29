@@ -7,6 +7,7 @@ import {
   Alert,
   SafeAreaView,
   ScrollView,
+  Dimensions,
 } from "react-native";
 import tw from "twrnc";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -17,22 +18,26 @@ import { useAuth } from "../../../../contexts/AuthContext/authenticatedUser";
 import { RootStackParamList } from "../../../../types/rootStackParamList";
 import type { StackNavigationProp } from "@react-navigation/stack";
 import { useImagesContext } from "../../../../contexts/ImageContext/imageContext";
-import { Dimensions } from "react-native";
+
 const screenHeight = Dimensions.get("window").height;
 
 export const ImagePreviewScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const { authState } = useAuth();
-  const route = useRoute();
-  const { imageId } = route.params as { imageId: string };
-
   const { images } = useImagesContext();
-  const image = images.find((img) => img.id === imageId);
+  const route = useRoute();
+  const { imageId, imageUri } = route.params as { imageId?: string; imageUri?: string };
 
-  if (!image) {
+  const image = imageId
+    ? images.find((img) => img.id === imageId)
+    : imageUri
+    ? { uri: imageUri, id: "processed" }
+    : undefined;
+
+  if (!image || !image.uri) {
     return (
       <SafeAreaView style={tw`flex-1 bg-slate-900 justify-center items-center`}>
-        <Text style={tw`text-white text-base`}>Imagem não encontrada.</Text>
+        <Text style={tw`text-white text-base`}>Imagem não encontrada ou inválida.</Text>
       </SafeAreaView>
     );
   }
@@ -40,21 +45,17 @@ export const ImagePreviewScreen = () => {
   const handleDownload = async () => {
     const { status } = await MediaLibrary.requestPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert(
-        "Permissão negada",
-        "Você precisa permitir acesso à galeria para salvar imagens."
-      );
+      Alert.alert("Permissão negada", "Você precisa permitir acesso à galeria para salvar imagens.");
       return;
     }
 
     try {
-      const fileName = image.uri?.split("/").pop() || `imagem_${Date.now()}.jpg`;
+      const fileName = image.uri.split("/").pop() || `imagem_${Date.now()}.jpg`;
       const destPath = `${FileSystem.cacheDirectory}${fileName}`;
 
-      await FileSystem.copyAsync({
-        from: image.uri,
-        to: destPath,
-      });
+      // Faz o download direto da URL
+      const downloadResumable = FileSystem.createDownloadResumable(image.uri, destPath);
+      await downloadResumable.downloadAsync();
 
       await MediaLibrary.saveToLibraryAsync(destPath);
       Alert.alert("Sucesso", "Imagem salva na galeria!");
@@ -66,7 +67,6 @@ export const ImagePreviewScreen = () => {
 
   return (
     <SafeAreaView style={tw`flex-1 bg-slate-900`}>
-      {/* Header bonito */}
       <View style={tw`flex-row items-center justify-between px-5 py-4 bg-slate-800 shadow-lg`}>
         <Text style={tw`text-white text-xl font-bold`}>🔍  Pré-visualização</Text>
         <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -74,17 +74,15 @@ export const ImagePreviewScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Imagem centralizada */}
       <ScrollView contentContainerStyle={tw`flex-grow px-5 py-6 items-center justify-center`}>
         <View style={tw`w-full rounded-3xl overflow-hidden shadow-xl mb-6`}>
-        <Image
-          source={{ uri: image.uri }}
-          style={[tw`w-full rounded-3xl`, { height: screenHeight * 0.6 }]}
-          resizeMode="cover"
-        />
+          <Image
+            source={{ uri: image.uri }}
+            style={[tw`w-full rounded-3xl`, { height: screenHeight * 0.6 }]}
+            resizeMode="cover"
+          />
         </View>
 
-        {/* Botão de download */}
         <TouchableOpacity
           onPress={handleDownload}
           style={tw`flex-row items-center justify-center bg-sky-600 py-3 px-6 rounded-full mb-4 shadow-md`}
@@ -95,7 +93,6 @@ export const ImagePreviewScreen = () => {
           </Text>
         </TouchableOpacity>
 
-        {/* Botão de cancelar */}
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={tw`flex-row items-center justify-center py-3`}

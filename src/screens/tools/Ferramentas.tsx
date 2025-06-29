@@ -88,7 +88,9 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
   const { uploadImage, images, selectedFilter, setSelectedFilter, getProcessamentoPorId } = useImagesContext();
 
   const [modalVisible, setModalVisible] = useState(false);
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
   const [selectedTool, setSelectedTool] = useState<Item>();
+  const [toolSelectionActive, setToolSelectionActive] = useState(false);
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -96,27 +98,59 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
     setSelectedTool(tool);
     setSelectedFilter(tool.name);
     setModalVisible(true);
+    setToolSelectionActive(true)
     setImageUri(null);
-  };  
+  };
 
   const handleCloseModal = () => {
     setModalVisible(false);
-    setSelectedTool(undefined);
+    setToolSelectionActive(false)
   };
 
-  const handleUploadAndFilter = async (imageUri: string, selectedFilter: string) => {
+  const handleCloseConfirmModal = () => {
+    setConfirmModalVisible(false);
+    setImageUri(null);
+    setToolSelectionActive(false)
+  };
+
+  // Função que abre câmera ou galeria e mostra o preview para confirmação
+  const onPickImage = async (pickFunc: () => Promise<string | null>) => {
+    const uri = await pickFunc();
+    if (uri) {
+      setImageUri(uri);
+      setModalVisible(false);
+      setConfirmModalVisible(true);
+    }
+  };
+
+  const handleConfirmUpload = async () => {
     if (!selectedFilter) {
       Alert.alert("Erro", "Selecione um filtro antes.");
       return;
     }
-  
-    const uploadedImage = await uploadImage(imageUri, selectedFilter);
-  
-    if (!uploadedImage || !uploadedImage.Id) {
-      Alert.alert("Erro", "Falha ao enviar imagem.");
+    if (!imageUri) {
+      Alert.alert("Erro", "Nenhuma imagem selecionada.");
       return;
     }
-  };   
+
+    setLoading(true);
+    try {
+      const uploadedImage = await uploadImage(imageUri, selectedFilter);
+
+      if (!uploadedImage || !uploadedImage.Id) {
+        Alert.alert("Erro", "Falha ao enviar imagem.");
+        return;
+      }
+      Alert.alert("Sucesso", "Imagem enviada com sucesso!");
+    } catch (error) {
+      Alert.alert("Erro", "Erro ao enviar imagem.");
+    } finally {
+      setLoading(false);
+      setConfirmModalVisible(false);
+      setToolSelectionActive(false)
+      setImageUri(null);
+    }
+  };
 
   return (
     <View style={tw`mt-6 px-4`}>
@@ -133,7 +167,7 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
             onPress={() => onToolPress(item)}
             style={tw.style(
               "bg-slate-700 w-28 h-28 p-3 rounded-lg items-center justify-center mx-2",
-              selectedTool?.name === item.name && "border-2 border-cyan-400"
+              toolSelectionActive && selectedTool?.name === item.name && "border-2 border-cyan-400"
             )}
           >
             <Icon name={item.icon} size={24} color="#fff" />
@@ -146,7 +180,7 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
         showsHorizontalScrollIndicator={false}
       />
 
-      {/* Modal de seleção */}
+      {/* Modal para escolher câmera ou galeria */}
       <Modal visible={modalVisible} transparent animationType="fade">
         <TouchableOpacity
           style={tw`flex-1 items-center justify-center bg-black bg-opacity-50`}
@@ -160,13 +194,7 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
 
             <View style={tw`flex-row justify-around mb-4`}>
               <TouchableOpacity
-                onPress={async () => {
-                  const uri = await openCamera();
-                  if (uri) {
-                    await handleUploadAndFilter(uri, String(selectedFilter));
-                    setModalVisible(false);
-                  }
-                }}                
+                onPress={() => onPickImage(openCamera)}
                 style={tw`bg-sky-500 px-4 py-3 rounded-lg items-center`}
               >
                 <Icon name="camera" size={30} color="#fff" />
@@ -174,13 +202,7 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
               </TouchableOpacity>
 
               <TouchableOpacity
-                onPress={async () => {
-                  const uri = await openGallery();
-                  if (uri) {
-                    await handleUploadAndFilter(uri, String(selectedFilter));
-                    setModalVisible(false);
-                  }
-                }}
+                onPress={() => onPickImage(openGallery)}
                 style={tw`bg-teal-500 px-4 py-3 rounded-lg items-center`}
               >
                 <Icon name="image" size={30} color="#fff" />
@@ -193,6 +215,42 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
+      </Modal>
+
+      {/* Modal de confirmação da imagem */}
+      <Modal visible={confirmModalVisible} transparent animationType="fade">
+        <View style={tw`flex-1 bg-black bg-opacity-70 justify-center items-center px-6`}>
+          <View style={tw`bg-slate-900 rounded-2xl p-4 w-full max-w-xs`}>
+            <Text style={tw`text-white text-lg text-center mb-4`}>Confirmar imagem?</Text>
+
+            {imageUri && (
+              <Image
+                source={{ uri: imageUri }}
+                style={tw`w-full h-64 rounded-xl mb-4`}
+                resizeMode="cover"
+              />
+            )}
+
+            <View style={tw`flex-row justify-between`}>
+              <TouchableOpacity
+                onPress={handleCloseConfirmModal}
+                style={tw`flex-1 bg-indigo-600 px-4 py-3 rounded-lg mr-2`}
+              >
+                <Text style={tw`text-white text-center font-semibold`}>Cancelar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleConfirmUpload}
+                style={tw`flex-1 bg-sky-600 px-4 py-3 rounded-lg ml-2`}
+                disabled={loading}
+              >
+                <Text style={tw`text-white text-center font-semibold`}>
+                  {loading ? "Enviando..." : "Confirmar"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
       </Modal>
     </View>
   );

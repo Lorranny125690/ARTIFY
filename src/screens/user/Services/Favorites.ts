@@ -20,7 +20,7 @@ export function useFavoritos() {
       });
 
       const simplifiedList = result.data.simplified;
-      const imageProcessed = simplifiedList.filter((img: any) => img.type === 1);
+      const imageProcessed = simplifiedList.filter((img: any) => img.type === 1 && img.favorite === true);
 
       const imagesWithUrls: ImageType[] = imageProcessed.map((img: any) => {
         const data = img.date ? new Date(img.date) : new Date();
@@ -33,7 +33,7 @@ export function useFavoritos() {
           filename: `${agora.getFullYear()}-${agora.getMonth()+1}-${agora.getDate()}_${agora.getHours()}-${agora.getMinutes()}-${agora.getSeconds()}`,        
           dataFormatada,
           favorite: true,
-          type: img.type
+          type: "1"
         };
       });
 
