@@ -12,9 +12,10 @@ import { DrawerNavigationProp } from "@react-navigation/drawer";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import tw from "twrnc";
-import { RecentProcessedImages } from "./tools/functions/recentProcess";
-import type { Images } from "../types/entitys/images";
-import { useAuth } from "../contexts/AuthContext/authenticatedUser";
+import { API_URL, useAuth } from "../contexts/AuthContext/authenticatedUser";
+import Axios from "../scripts/axios";
+import * as Animatable from "react-native-animatable";
+
 
 type Item = {
   name: string;
@@ -45,8 +46,15 @@ const Section: React.FC<{
   data: Item[];
   onPress?: (item: Item) => void;
 }> = ({ title, data, onPress }) => (
-  <View style={tw`mt-6 px-2 items-center`}>
-    <Text style={tw`text-white text-lg font-semibold self-start`}>{title}</Text>
+  <Animatable.View
+    animation="fadeInUp"
+    duration={500}
+    delay={100}
+    useNativeDriver
+    style={tw`mt-10 px-2 items-center`}
+  >
+    <Text style={tw`text-white text-lg left-5 font-semibold self-start`}>{title}</Text>
+
     <FlatList
       horizontal
       data={data}
@@ -63,25 +71,71 @@ const Section: React.FC<{
       contentContainerStyle={tw`mt-2 px-4 items-center`}
       showsHorizontalScrollIndicator={false}
     />
-  </View>
+  </Animatable.View>
 );
+
+
+type ImageType = {
+  type: number;
+  id: string;
+  uri: string;
+  filename: string;
+  nome: string;
+  dataFormatada: string;
+  favorite: boolean;
+};
 
 export const HomeScreen: React.FC = () => {
   const navigation = useNavigation<DrawerNavigationProp<any>>();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [recentEdits,setRecentEdits] = useState<Images[]>([])
+  const [recentEdits,setRecentEdits] = useState<ImageType[]>([])
+  const [loading, setLoading] = useState<boolean>(true);
   const { authState } = useAuth();
-
   const token = authState?.token;
 
+  const history = async () => {
+    setLoading(true);
+    try {
+      const result = await Axios.get("/images", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const simplifiedList = result.data.simplified;
+
+      const imageProcessed = simplifiedList
+        .filter((img: any) => img.type === 1)
+        .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 5);
+
+      const imagesWithUrls: ImageType[] = imageProcessed.map((img: any) => {
+        const data = img.date ? new Date(img.date) : new Date();
+        const dataFormatada = data.toLocaleDateString("pt-BR");
+        const agora = new Date();
+
+        return {
+          id: img.id,
+          uri: img.public_url.startsWith("http") ? img.public_url : `${API_URL}${img.public_url}`,
+          filename: `Editado em ${dataFormatada}`,
+          dataFormatada,
+          nome: img.filename,
+          favorite: img.favorite ?? false,
+          type: img.type,
+        };
+      });
+
+      setRecentEdits(imagesWithUrls);
+    } catch (e: any) {
+      console.warn("Erro ao buscar imagens:", e?.response?.data?.msg || e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchImages = async () => {
-      const loadRecentImages = await RecentProcessedImages(token);
-      setRecentEdits(loadRecentImages);
-    };
-  
-    fetchImages();
-  }, []);
+    if (authState?.authenticated) {
+      history();
+    }
+  }, [authState?.authenticated]);
 
   const handleImageUpload = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -115,36 +169,39 @@ export const HomeScreen: React.FC = () => {
       </View>
 
       {/* Edições recentes */}
-      <View style={tw`px-4 mb-10 mt-6`}>
+      <Animatable.View
+        animation="fadeInUp"
+        delay={50}
+        duration={500}
+        useNativeDriver
+        style={tw`px-4 mb-10 mt-6`}>
           <Text style={tw`text-white text-lg font-semibold mb-2`}>Usadas recentemente</Text>
-          {
-            recentEdits.length > 0 ? (
-              <FlatList
-                horizontal
-                data={recentEdits}
-                keyExtractor={(_, index) => index.toString()}
-                renderItem={({ item }) => (
-                  <View style={tw`bg-slate-700 m-2 p-4 rounded-lg w-29 mx-2 items-center shadow-lg`}>
-                    <Image 
-                      source={
-                        item.public_url
-                          ? { uri: item.public_url } 
-                          : require("../assets/icon.png")
-                      }
-                      style={tw`w-16 h-16`} 
-                    />
-                    <Text style={tw`text-white text-xs mt-2 text-center`}>Grayscale</Text>
-                  </View>
-                )}
-                contentContainerStyle={tw`items-center`}
-                showsHorizontalScrollIndicator={false}
-              />
-            ) : (
-              <Text style={tw`text-gray-400 text-center mt-4`}>
-                Nenhuma edição recente encontrada.
-              </Text>
-          )}
-      </View>
+        {recentEdits.length > 0 ? (
+          <FlatList
+            horizontal
+            data={recentEdits}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                onPress={() => navigation.navigate("Photo", { imageId: item.id })}
+                style={tw`bg-slate-700 p-3 rounded-lg mx-2 top--3 items-center w-28 h-35`}
+              >
+                <Image
+                  source={{ uri: item.uri }}
+                  style={tw`w-28 h-35 rounded-lg`}
+                  resizeMode="cover"
+                />
+              </TouchableOpacity>
+            )}
+            contentContainerStyle={tw`items-center`}
+            showsHorizontalScrollIndicator={false}
+          />
+        ) : (
+          <Text style={tw`text-gray-400 text-center mt-4`}>
+            Nenhuma edição recente encontrada.
+          </Text>
+        )}
+      </Animatable.View>
 
       {/* Ferramentas agrupadas */}
       {toolSections.map((section) => (
@@ -152,7 +209,7 @@ export const HomeScreen: React.FC = () => {
       ))}
 
       {/* Footer */}
-      <View style={tw`mt-8 py-4 gap-10 bg-slate-800 items-center justify-center top-30`}>
+      <View style={tw`bottom-0 top-10 py-4 gap-10 bg-slate-800 items-center justify-center`}>
         <View style={tw`flex-row top-2 items-center`}>
           <Text style={tw`text-white mr-30 text-xl font-semibold mb-2`}>Redes sociais</Text>
           <Image source={require("../assets/iconArtify.png")} style={tw`w-20 h-9`}/>

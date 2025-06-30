@@ -21,9 +21,10 @@ import { openGallery } from "./functions/OpenGallery";
 import { RecentProcessedImages } from "./functions/recentProcess";
 import { Images } from "../../types/entitys/images";
 import { Camera } from "lucide-react-native";
-import { useAuth } from "../../contexts/AuthContext/authenticatedUser";
+import { API_URL, useAuth } from "../../contexts/AuthContext/authenticatedUser";
 import Axios from "../../scripts/axios";
-import { useImagesContext, type ImageType } from "../../contexts/ImageContext/imageContext";
+import { useImagesContext } from "../../contexts/ImageContext/imageContext";
+import icon2 from "react-native-vector-icons/AntDesign"
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -49,14 +50,12 @@ const toolSections: { title: string; data: Item[] }[] = [
     ],
   },
   {
-    title: "Especiais",
+    title: "Modificação de imagem",
     data: [
       { name: "Remove Background", icon: "scissors" },
-      { name: "Pixelização facial", icon: "th-large" },
+      { name: "Converter Documento", icon: "file" },
       { name: "Pixelização Total", icon: "th" },
-      { name: "Blur", icon: "eye-slash" },
-      { name: "Remover Background em Vídeo", icon: "video-camera" },
-      { name: "Detecção de Rostos com IA", icon: "user-circle" },
+      { name: "Comprimir Imagens", icon: "expand" },
     ],
   },
 ];
@@ -78,6 +77,10 @@ const detecaoRealceSection: { title: string; data: Item[] } = {
   data: [
     { name: "Color Enhancer", icon: "magic" },
     { name: "Chromatic Aberration", icon: "eye" },
+    { name: "Blur", icon: "eye-slash" },
+    { name: "Pixelização facial", icon: "th-large" },
+    { name: "Remover Background em Vídeo", icon: "video-camera" },
+    { name: "Detecção de Rostos com IA", icon: "user-circle" },
   ],
 };
 
@@ -141,7 +144,7 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
         Alert.alert("Erro", "Falha ao enviar imagem.");
         return;
       }
-      Alert.alert("Sucesso", "Imagem enviada com sucesso!");
+      
     } catch (error) {
       Alert.alert("Erro", "Erro ao enviar imagem.");
     } finally {
@@ -153,7 +156,7 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
   };
 
   return (
-    <View style={tw`mt-6 px-4`}>
+    <View style={tw`mt-6 px-4 mb-15`}>
       <Text style={tw`text-white text-lg font-semibold mb-2`}>
         {title}
       </Text>
@@ -166,16 +169,24 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
           <TouchableOpacity
             onPress={() => onToolPress(item)}
             style={tw.style(
-              "bg-slate-700 w-28 h-28 p-3 rounded-lg items-center justify-center mx-2",
+              title === "Modificação de imagem"
+                ? "bg-slate-700 w-40 h-30 p-4"
+                : "bg-slate-700 w-28 h-28 p-3",
+              "rounded-lg items-center justify-center mr-3",
               toolSelectionActive && selectedTool?.name === item.name && "border-2 border-cyan-400"
             )}
           >
-            <Icon name={item.icon} size={24} color="#fff" />
-            <Text style={tw`text-white text-xs mt-2 text-center`}>
+            <Icon name={item.icon} size={title === "Modificação de imagem" ? 28 : 24} color="#fff" />
+            <Text
+              style={tw.style(
+                title === "Modificação de imagem" ? "text-white text-sm mt-3 text-center" : "text-white text-xs mt-2 text-center"
+              )}
+            >
               {item.name}
             </Text>
           </TouchableOpacity>
         )}
+        
         contentContainerStyle={tw`mt-2`}
         showsHorizontalScrollIndicator={false}
       />
@@ -256,23 +267,26 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
   );
 };
 
+type ImageType = {
+  type: number;
+  id: string;
+  uri: string;
+  filename: string;
+  nome: string;
+  dataFormatada: string;
+  favorite: boolean;
+};
+
 export const Ferramentas: React.FC = () => {
   const navigation = useNavigation<DrawerNavigationProp<any>>();
-  const [recentEdits, setRecentEdits] = useState<Images[]>([]);
   const { authState } = useAuth();
-
+  const [recentEdits, setRecentEdits] = useState<ImageType[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const token = authState?.token;
-
-  useEffect(() => {
-    const fetchImages = async () => {
-      const loadRecentImages = await RecentProcessedImages(token);
-      setRecentEdits(loadRecentImages);
-    };
-    fetchImages();
-  }, []);
 
   return (
     <ScrollView style={tw`flex-1 bg-slate-900`} contentContainerStyle={tw`pb-10`}>
+      {/* Topo */}
       <View style={tw`bg-slate-800 flex-row justify-between items-center py-3 px-4`}>
         <Image source={require("../../assets/iconArtify.png")} style={tw`w-20 h-9`} />
         <TouchableOpacity onPress={() => navigation.openDrawer()}>
@@ -280,65 +294,27 @@ export const Ferramentas: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      <View style={tw`px-4 mt-6`}>
-        <Text style={tw`text-white text-lg font-semibold mb-2`}>
-          Usadas recentemente
-        </Text>
-        {recentEdits.length > 0 ? (
-          <FlatList
-            horizontal
-            data={recentEdits}
-            keyExtractor={(_, index) => index.toString()}
-            renderItem={({ item }) => (
-              <View style={tw`bg-slate-700 m-2 p-4 rounded-lg w-29 mx-2 items-center shadow-lg`}>
-                <Image
-                  source={
-                    item.public_url
-                      ? { uri: item.public_url }
-                      : require("../../assets/icon.png")
-                  }
-                  style={tw`w-16 h-16`}
-                />
-                <Text style={tw`text-white text-xs mt-2 text-center`}>Grayscale</Text>
-              </View>
-            )}
-            contentContainerStyle={tw`items-center`}
-            showsHorizontalScrollIndicator={false}
-          />
-        ) : (
-          <Text style={tw`text-gray-400 text-center mt-4`}>
-            Nenhuma edição recente encontrada.
-          </Text>
-        )}
-      </View>
-
-      {toolSections.map((section) => (
+      {/* Ferramentas */}
+      {[...toolSections, detecaoRealceSection, transformacoesSection].map((section) => (
         <Section key={section.title} title={section.title} data={section.data} />
       ))}
+      
 
-      <Section
-        key={detecaoRealceSection.title}
-        title={detecaoRealceSection.title}
-        data={detecaoRealceSection.data}
-      />
-
-      <Section
-        key={transformacoesSection.title}
-        title={transformacoesSection.title}
-        data={transformacoesSection.data}
-      />
-
-      <View style={tw`mt-8 py-4 gap-10 bg-slate-800 items-center justify-center top-10`}>
-        <View style={tw`flex-row top-2 items-center`}>
-          <Text style={tw`text-white mr-30 text-xl font-semibold mb-2`}>Redes sociais</Text>
+      {/* Rodapé com redes sociais */}
+      <View style={tw`bottom-0 top-10 py-6 bg-slate-800 items-center`}>
+        <View style={tw`flex-row items-center mb-4`}>
+          <Text style={tw`text-white text-xl font-semibold mr-4`}>Redes sociais</Text>
           <Image source={require("../../assets/iconArtify.png")} style={tw`w-20 h-9`} />
         </View>
-        <View style={tw`gap-10 flex-row justify-around w-full max-w-xs`}>
+        <View style={tw`flex-row justify-around w-full max-w-xs`}>
           {["facebook", "github", "envelope", "instagram", "twitter"].map((icon) => (
-            <Icon key={icon} name={icon} size={20} color="#fff" />
+            <TouchableOpacity key={icon} style={tw`mx-2`}>
+              <Icon name={icon} size={20} color="#fff" />
+            </TouchableOpacity>
           ))}
         </View>
       </View>
     </ScrollView>
   );
 };
+

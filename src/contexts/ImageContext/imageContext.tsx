@@ -33,7 +33,7 @@ interface ImagesContextProps {
   Blur: (image: ImageType, amount: number) => Promise<{ id: string } | void>;
   Canny: (img: ImageType, amount: number) => Promise<{ id: string } | void>;
   Pixelate: (image: ImageType) => Promise<{ id: string } | void>;
-  RGBBoost: (image: ImageType) => Promise<{ id: string } | void>;
+  RGBBoost: (img: ImageType, Amount1: number, amount2: number, amount3: number) => Promise<{ id: string } | void>;
   SkinWhitening: (image: ImageType) => Promise<{ id: string } | void>;
   Heat: (image: ImageType) => Promise<{ id: string } | void>;
   Rescale: (img: ImageType, amount: number) => Promise<{ id: string } | void>;
@@ -109,7 +109,7 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       if (!token) throw new Error("Token de autenticação ausente.");
   
       const response = await Axios.post(
-        `/processes/defined/${endpoint}`,
+        `processes/defined/${endpoint}`,
         { image_id: image.id },
         {
           headers: {
@@ -163,6 +163,11 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const PencilSketch = (img: ImageType) => applyFilter("pencil_sketch_filter", img);
+  const Cartoon = (img: ImageType) => applyFilter("cartoon_filter", img);
+  const Sepia = (img: ImageType) => applyFilter("sepia_filter", img);
+  const Flip = (img: ImageType) => applyFilter("flip", img);
+  const ChangeBrightness = (img: ImageType) => applyFilter("change_brightness", img);
   const Canny = async (img: ImageType, amount: number): Promise<{ id: string } | void> => {
     try {
       const token = authState?.token;
@@ -207,7 +212,52 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
   
   const Pixelate = (img: ImageType) => applyFilter("pixelate", img);
-  const RGBBoost = (img: ImageType) => applyFilter("rgb_boost", img);
+  const RGBBoost = async (img: ImageType, Amount1: number, amount2: number, amount3: number): Promise<{ id: string } | void> => {
+    try {
+      const token = authState?.token;
+      if (!token) {
+        Alert.alert("Erro", "Token de autenticação ausente.");
+        return;
+      }
+  
+      const payload = {
+        image_id: img.id,
+        Amount: {
+          amountB: Amount1,
+          amountG: amount2,
+          amountR: amount3
+        }
+      };
+  
+      console.log("Enviando payload para rgb:", payload);
+  
+      const response = await Axios.post(
+        `/processes/defined/rgb_Boost`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      console.log("Resposta do canny:", response.data);
+  
+      const processedUrl = response.data?.image;
+      console.log(processedUrl)
+
+      if (processedUrl) {
+        navigation.navigate("Photo", { imageId: processedUrl });
+      }
+  
+      await fetchImages();
+  
+      return { id: processedUrl };
+    } catch (error: any) {
+      console.error("Erro ao aplicar canny:", error?.response?.data || error.message);
+      Alert.alert("Erro", "Não foi possível aplicar o filtro de borda (Canny).");
+    }
+  };
   const SkinWhitening = (img: ImageType) => applyFilter("skin_Whitening", img);
   const Heat = (img: ImageType) => applyFilter("heat", img);
   const Rescale = async (img: ImageType, Scale: number) => {
@@ -238,21 +288,36 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const Crop = (img: ImageType) => applyFilter("crop", img);
 
   const filterMap: { [key: string]: (img: ImageType) => Promise<{ id: string } | void> } = {
+    // 🎨 Filtros
     "Grayscale (Preto e Branco)": Grayscale,
+    "Sepia": Sepia,
+    "Filtro de Cartoon": Cartoon,
+    "Filtro de Cor Personalizada (RGB Boost)": (img) => RGBBoost(img, 10, 10, 10),
     "Filtro de Inversão (Negative)": Negative,
-    "Remove Background": Background,
-    "Pixelização Total": Pixelate,
+    "Filtro de Brilho e Contraste": ChangeBrightness,
     "Filtro de Clareamento de Pele": SkinWhitening,
     "Filtro de Calor (Thermal)": Heat,
-    "Filtro de Cor Personalizada (RGB Boost)": RGBBoost,
+    "Filtro de Desenho a Lápis": PencilSketch,
+    "Filtro de Pintura a Óleo": (img) => Canny(img, 5),
+  
+    // 🌟 Especiais
+    "Remove Background": Background,
+    "Pixelização Total": Pixelate,
     "Blur": (img) => Blur(img, 5),
+  
+    // 🔄 Transformações
     "Resize": (img) => Rescale(img, 2),
-    "Translação (warpAffine)": Translate,
     "Rotação": Rotate,
+    "Translação (warpAffine)": Translate,
     "Escala (Cardinal)": CardinalScale,
+    "Flip X": Flip,
     "Cropping": Crop,
-    "Filtro de Pintura a Óleo": (img) => Canny(img, 5)
-  };  
+  
+    // ❓Possíveis futuros (você pode implementar depois)
+    // "Pixelização facial": PixelateFace,
+    // "Remover Background em Vídeo": removeVideoBackground,
+    // "Detecção de Rostos com IA": faceDetection,
+  };   
 
   const uploadImage = async (imageUri: string, filterName: string): Promise<{ Id: string } | void> => {
     try {
@@ -278,7 +343,6 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       if (response.status === 201) {
         const imageId = response.data.image.Id;
-        Alert.alert("Sucesso", `Imagem enviada com sucesso!`);
 
         let filterResult;
 
