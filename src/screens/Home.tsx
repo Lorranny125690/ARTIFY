@@ -16,7 +16,6 @@ import { API_URL, useAuth } from "../contexts/AuthContext/authenticatedUser";
 import Axios from "../scripts/axios";
 import * as Animatable from "react-native-animatable";
 
-
 type Item = {
   name: string;
   icon: string;

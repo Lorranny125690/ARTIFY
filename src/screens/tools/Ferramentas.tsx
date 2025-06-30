@@ -25,6 +25,7 @@ import { API_URL, useAuth } from "../../contexts/AuthContext/authenticatedUser";
 import Axios from "../../scripts/axios";
 import { useImagesContext } from "../../contexts/ImageContext/imageContext";
 import icon2 from "react-native-vector-icons/AntDesign"
+import * as Animatable from "react-native-animatable";
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -162,27 +163,31 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
         data={data}
         keyExtractor={(item) => item.name}
         renderItem={({ item }) => (
-          <TouchableOpacity
-            onPress={() => onToolPress(item)}
-            style={tw.style(
-              title === "Modificação de imagem"
-                ? "bg-slate-700 w-40 h-30 p-4"
-                : "bg-slate-700 w-28 h-28 p-3",
-              "rounded-lg items-center justify-center mr-3",
-              toolSelectionActive && selectedTool?.name === item.name && "border-2 border-cyan-400"
-            )}
+          <Animatable.View
+            animation="fadeInUp"
+            duration={800}
           >
-            <Icon name={item.icon} size={title === "Modificação de imagem" ? 28 : 24} color="#fff" />
-            <Text
+            <TouchableOpacity
+              onPress={() => onToolPress(item)}
               style={tw.style(
-                title === "Modificação de imagem" ? "text-white text-sm mt-3 text-center" : "text-white text-xs mt-2 text-center"
+                title === "Modificação de imagem"
+                  ? "bg-slate-700 w-40 h-30 p-4"
+                  : "bg-slate-700 w-28 h-28 p-3",
+                "rounded-lg items-center justify-center mr-3",
+                toolSelectionActive && selectedTool?.name === item.name && "border-2 border-cyan-400"
               )}
             >
-              {item.name}
-            </Text>
-          </TouchableOpacity>
+              <Icon name={item.icon} size={title === "Modificação de imagem" ? 28 : 24} color="#fff" />
+              <Text
+                style={tw.style(
+                  title === "Modificação de imagem" ? "text-white text-sm mt-3 text-center" : "text-white text-xs mt-2 text-center"
+                )}
+              >
+                {item.name}
+              </Text>
+            </TouchableOpacity>
+          </Animatable.View>
         )}
-        
         contentContainerStyle={tw`mt-2`}
         showsHorizontalScrollIndicator={false}
       />
@@ -230,9 +235,9 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
           <View style={tw`bg-slate-900 rounded-2xl p-4 w-full max-w-xs`}>
             <Text style={tw`text-white text-lg text-center mb-4`}>Confirmar imagem?</Text>
 
-            <ScrollView horizontal>
+            <ScrollView contentContainerStyle={tw`justify-center items-center p-4`}horizontal>
               {imageUris.map((uri, index) => (
-                <Image key={index} source={{ uri }} style={{ width: 100, height: 100, marginRight: 10 }} />
+                <Image key={index} source={{ uri }} style={tw`left-5 w-50 h-50 m-2`} />
               ))}
             </ScrollView>
             <View style={tw`flex-row justify-between`}>

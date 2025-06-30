@@ -6,7 +6,6 @@
     "orientation": "portrait",
     "icon": "./src/assets/Artify.png",
     "userInterfaceStyle": "dark",
-    "newArchEnabled": true,
     "splash": {
       "image": "./src/assets/Artify.png",
       "backgroundColor": "#000000",

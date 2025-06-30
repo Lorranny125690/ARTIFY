@@ -21,7 +21,6 @@ export function RootNavigator() {
     <ImagesProvider><Stack.Navigator
       screenOptions={{
         headerShown: false,
-        animation: 'fade',
         cardStyleInterpolator: ({ current }) => ({
           cardStyle: {
             opacity: current.progress,
