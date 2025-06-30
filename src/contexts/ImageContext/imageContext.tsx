@@ -21,7 +21,7 @@ interface ImagesContextProps {
   fetchImages: () => void;
   loading: boolean;
   setImages: React.Dispatch<React.SetStateAction<ImageType[]>>;
-  uploadImage: (imageUri: string, filterName: string) => Promise<{ Id: string } | void>;
+  uploadImage: (imageUris: string[], filterName: string) => Promise<{ Ids: string[] } | void>;
   deleteImage: (image: ImageType) => Promise<void>;
   toggleFavorite: (image: ImageType) => Promise<void>;
   selectedFilter: string | null;
@@ -319,48 +319,51 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     // "Detecção de Rostos com IA": faceDetection,
   };   
 
-  const uploadImage = async (imageUri: string, filterName: string): Promise<{ Id: string } | void> => {
+  const uploadImage = async (imageUris: string[], filterName: string): Promise<{ Ids: string[] } | void> => {
     try {
       const token = authState?.token;
       if (!token) {
         Alert.alert("Erro", "Usuário não autenticado.");
         return;
       }
-
-      const formData = new FormData();
-      formData.append("file", {
-        uri: imageUri,
-        type: "image/jpeg",
-        name: `image_${Date.now()}.jpg`,
-      } as any);
-
-      const response = await Axios.post("/images", formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      if (response.status === 201) {
-        const imageId = response.data.image.Id;
-
-        let filterResult;
-
-        const imageObj = { id: imageId } as ImageType;
-        if (filterMap[filterName]) {
-          filterResult = await filterMap[filterName](imageObj);
+  
+      const uploadedIds: string[] = [];
+  
+      for (const uri of imageUris) {
+        const formData = new FormData();
+        formData.append("file", {
+          uri,
+          type: "image/jpeg",
+          name: `image_${Date.now()}.jpg`,
+        } as any);
+  
+        const response = await Axios.post("/images", formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
+  
+        if (response.status === 201) {
+          const imageId = response.data.image.Id;
+          uploadedIds.push(imageId);
+  
+          if (filterMap[filterName]) {
+            const imageObj = { id: imageId } as ImageType;
+            await filterMap[filterName](imageObj);
+          }
+        } else {
+          console.warn("Falha ao enviar uma das imagens.");
         }
-
-        await fetchImages();
-        return { Id: filterResult?.id ?? imageId};
-      } else {
-        Alert.alert("Erro", "Erro ao enviar a imagem.");
       }
+  
+      await fetchImages();
+      return { Ids: uploadedIds };
     } catch (error: any) {
       console.warn("Erro ao guardar imagem:", error);
-      Alert.alert("Erro", error?.response?.data?.msg || "Erro ao enviar imagem.");
+      Alert.alert("Erro", error?.response?.data?.msg || "Erro ao enviar imagens.");
     }
-  };
+  };  
 
   const getProcessamentoPorId = async (id: string) => {
     try {

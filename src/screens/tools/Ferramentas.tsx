@@ -94,7 +94,7 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
   const [selectedTool, setSelectedTool] = useState<Item>();
   const [toolSelectionActive, setToolSelectionActive] = useState(false);
-  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [imageUris, setImageUris] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
   const onToolPress = (tool: Item) => {
@@ -102,7 +102,6 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
     setSelectedFilter(tool.name);
     setModalVisible(true);
     setToolSelectionActive(true)
-    setImageUri(null);
   };
 
   const handleCloseModal = () => {
@@ -111,49 +110,46 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
   };
 
   const handleCloseConfirmModal = () => {
-    setConfirmModalVisible(false);
-    setImageUri(null);
+    setConfirmModalVisible(false)
     setToolSelectionActive(false)
   };
 
   // Função que abre câmera ou galeria e mostra o preview para confirmação
-  const onPickImage = async (pickFunc: () => Promise<string | null>) => {
-    const uri = await pickFunc();
-    if (uri) {
-      setImageUri(uri);
+  const onPickImage = async (pickFunc: () => Promise<string[]>) => {
+    const uris = await pickFunc();
+    if (uris.length > 0) {
+      setImageUris(uris);
       setModalVisible(false);
       setConfirmModalVisible(true);
     }
-  };
+  };  
 
   const handleConfirmUpload = async () => {
     if (!selectedFilter) {
       Alert.alert("Erro", "Selecione um filtro antes.");
       return;
     }
-    if (!imageUri) {
+    if (imageUris.length === 0) {
       Alert.alert("Erro", "Nenhuma imagem selecionada.");
       return;
     }
-
+  
     setLoading(true);
     try {
-      const uploadedImage = await uploadImage(imageUri, selectedFilter);
-
-      if (!uploadedImage || !uploadedImage.Id) {
-        Alert.alert("Erro", "Falha ao enviar imagem.");
+      const result = await uploadImage(imageUris, selectedFilter);
+      if (!result || !result.Ids || result.Ids.length === 0) {
+        Alert.alert("Erro", "Falha ao enviar imagens.");
         return;
       }
-      
     } catch (error) {
-      Alert.alert("Erro", "Erro ao enviar imagem.");
+      Alert.alert("Erro", "Erro ao enviar imagens.");
     } finally {
       setLoading(false);
       setConfirmModalVisible(false);
-      setToolSelectionActive(false)
-      setImageUri(null);
+      setToolSelectionActive(false);
+      setImageUris([]);
     }
-  };
+  };  
 
   return (
     <View style={tw`mt-6 px-4 mb-15`}>
@@ -234,14 +230,11 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
           <View style={tw`bg-slate-900 rounded-2xl p-4 w-full max-w-xs`}>
             <Text style={tw`text-white text-lg text-center mb-4`}>Confirmar imagem?</Text>
 
-            {imageUri && (
-              <Image
-                source={{ uri: imageUri }}
-                style={tw`w-full h-64 rounded-xl mb-4`}
-                resizeMode="cover"
-              />
-            )}
-
+            <ScrollView horizontal>
+              {imageUris.map((uri, index) => (
+                <Image key={index} source={{ uri }} style={{ width: 100, height: 100, marginRight: 10 }} />
+              ))}
+            </ScrollView>
             <View style={tw`flex-row justify-between`}>
               <TouchableOpacity
                 onPress={handleCloseConfirmModal}

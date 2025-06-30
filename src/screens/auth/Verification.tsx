@@ -5,11 +5,12 @@ import React, { useRef, useState } from 'react';
 import { ArrowLeft } from "lucide-react-native";
 import tw from "twrnc";
 import { RootStackParamList } from "../../types/rootStackParamList";
-
-
+import { useRoute, RouteProp } from "@react-navigation/native";
 
 export const VerificationScreen = () => {
     const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+    const route = useRoute<RouteProp<RootStackParamList, 'Recuperação'>>();
+    const email = route.params?.email;
   
     const [code, setCode] = useState(['', '', '', '', '']);
     const inputsRef = useRef<Array<TextInput | null>>([]);
@@ -21,33 +22,51 @@ export const VerificationScreen = () => {
   
     const handleChange = (text: string, index: number) => {
       if (text.length > 1) return;
+      if (text && !/^\d$/.test(text)) return; // impede entrada não numérica
+    
       const newCode = [...code];
       newCode[index] = text;
       setCode(newCode);
-      if (text && index < 4) inputsRef.current[index + 1]?.focus();
-    };
+    
+      if (text && index < 4) {
+        inputsRef.current[index + 1]?.focus();
+      }
+    };    
   
     const handleBackspace = (text: string, index: number) => {
       if (!text && index > 0) inputsRef.current[index - 1]?.focus();
     };
   
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
       const fullCode = code.join('');
       if (fullCode.length < 5) return;
-  
+    
       setIsSubmitting(true);
       setMessage('');
-  
-      setTimeout(() => {
-        setIsSubmitting(false);
-        if (fullCode === '12345') {
+    
+      try {
+        const response = await fetch(`https://sua-api.com/auth/verify`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, code: fullCode }),
+        });
+    
+        const data = await response.json();
+    
+        if (response.ok) {
           setMessage('✅ Código verificado com sucesso!');
           navigation.navigate("Login");
         } else {
           setMessage('❌ Código incorreto. Tente novamente.');
         }
-      }, 1500);
-    };
+      } catch (err) {
+        setMessage('❌ Erro de rede');
+      } finally {
+        setIsSubmitting(false);
+      }
+    };    
   
     const handleResend = () => {
       setMessage('');
