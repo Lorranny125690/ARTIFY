@@ -5,7 +5,8 @@ import * as MediaLibrary from "expo-media-library";
 import * as FileSystem from "expo-file-system";
 import { API_URL, useAuth } from "../../../contexts/AuthContext/authenticatedUser";
 import { useImagesContext } from "../../../contexts/ImageContext/imageContext";
-import { ImageType } from "../../../contexts/ImageContext/imageContext"
+import { ImageType } from "../../../contexts/ImageContext/imageContext";
+import { CustomModal } from "../../auth/Modal";
 
 export function useImagesServices() {
   const { images, setImages, uploadImage, deleteImage, toggleFavorite } = useImagesContext();
@@ -14,6 +15,7 @@ export function useImagesServices() {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const { authState } = useAuth();
+  const [modalMsg, setModalMsg] = useState("");
 
   const fetchImages = async () => {
     setLoading(true);
@@ -57,6 +59,7 @@ export function useImagesServices() {
     if (selectedImageIndex === null) return;
     deleteImage(images[selectedImageIndex]);
     setModalVisible(false);
+    setModalMsg("Deletada com sucesso!")
   };
 
   const handleFavorite = async () => {

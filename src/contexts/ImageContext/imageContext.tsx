@@ -5,6 +5,7 @@ import Axios from "../../scripts/axios";
 import { useNavigation } from "@react-navigation/native";
 import type { StackNavigationProp } from "@react-navigation/stack";
 import type { RootStackParamList } from "../../types/rootStackParamList";
+import Toast from 'react-native-toast-message';
 
 export type ImageType = {
   type: number;
@@ -49,7 +50,18 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [images, setImages] = useState<ImageType[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
+  const [modalMsg, setModalMsg] = useState("");
   const { authState } = useAuth();
+  const showToast = (type: 'success' | 'error' | 'info', title: string, message?: string) => {
+    Toast.show({
+      type,
+      text1: title,
+      text2: message,
+      position: 'bottom',
+      visibilityTime: 3000,
+    });
+  };
+  
 
   const fetchImages = async () => {
     setLoading(true);
@@ -79,7 +91,7 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setImages(imagesWithUrls);
     } catch (e: any) {
       console.warn("Erro ao buscar imagens:", e?.response?.data?.msg || e.message);
-      Alert.alert("Erro", "Não foi possível carregar as imagens.");
+      showToast('error', 'Erro ao carregar imagens', 'Tente novamente mais tarde.');
     } finally {
       setLoading(false);
     }
@@ -342,12 +354,13 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           img.id === image.id ? { ...img, favorite: favoriteValue } : img
         )
       );
+
+      Alert.alert("Imagem favoritada!")
     } catch (e) {
       console.error("Erro ao favoritar:", e);
       Alert.alert("Erro", "Não foi possível alterar o favorito.");
     }
   };
-    
 
   return (
     <ImagesContext.Provider

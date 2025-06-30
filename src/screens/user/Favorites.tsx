@@ -112,11 +112,13 @@ export function Favorito() {
                 key={image.id}
                 onPress={() => openModal(index)}
               >
+                <Animatable.View animation="fadeInUp" duration={500} delay={index * 100}>
                 <FallbackImage
                   source={{ uri: image.uri }}
                   style={tw`w-30 h-30 rounded-4`}
                   resizeMode="cover"
                 />
+                </Animatable.View>
               </TouchableOpacity>
             ))}
           </View>
