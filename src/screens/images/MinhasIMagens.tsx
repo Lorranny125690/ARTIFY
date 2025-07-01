@@ -19,7 +19,6 @@ import type { RootStackParamList } from "../../types/rootStackParamList";
 import { useImagesContext } from "../../contexts/ImageContext/imageContext";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import * as Animatable from 'react-native-animatable';
-import { CustomModal } from "../auth/Modal";
 
 const BounceInRight = Animatable.createAnimatableComponent(View);
 

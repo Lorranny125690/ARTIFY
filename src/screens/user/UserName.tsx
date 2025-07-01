@@ -15,7 +15,7 @@ import { RootStackParamList } from '../../types/rootStackParamList';
 import Axios from '../../scripts/axios';
 import { useAuth } from '../../contexts/AuthContext/authenticatedUser';
 
-export const userName = () => {
+export const UserName = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const { authState } = useAuth();
   const [email, setEmail] = useState('');

@@ -12,7 +12,7 @@ import type { RootStackParamList } from "../types/rootStackParamList";
 import { useAuth } from "../contexts/AuthContext/authenticatedUser";
 import { ImagesProvider } from "../contexts/ImageContext/imageContext";
 import { ChangePassword } from "../screens/user/Change";
-import { userName } from "../screens/user/UserName"
+import { UserName } from "../screens/user/UserName"
 import { AccountOptions } from "../screens/user/Choice";
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -47,7 +47,7 @@ export function RootNavigator() {
           <Stack.Screen name="Favoritos" component={Favorito}/>
           <Stack.Screen name="Historico" component={LastProcess}/>
           <Stack.Screen name="Password" component={ChangePassword}/>
-          <Stack.Screen name="userName" component={userName}/>
+          <Stack.Screen name="UserName" component={UserName}/>
           <Stack.Screen name="Choice" component={AccountOptions}/>
         </>
       ) : (

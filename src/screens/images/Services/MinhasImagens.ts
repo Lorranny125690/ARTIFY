@@ -17,43 +17,6 @@ export function useImagesServices() {
   const { authState } = useAuth();
   const [modalMsg, setModalMsg] = useState("");
 
-  const fetchImages = async () => {
-    setLoading(true);
-    try {
-      const token = authState?.token;
-
-      const result = await Axios.get("/images", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const allImages = result.data.simplified || [];
-
-      const imageProcessed = allImages.filter((img: any) => img.type === "processed");
-
-      const imagesWithUrls: ImageType[] = imageProcessed.map((img: any) => {
-        const data = img.date ? new Date(img.date) : new Date();
-        const dataFormatada = data.toLocaleDateString("pt-BR");
-
-        return {
-          id: img.id,
-          uri: img.public_url.startsWith("http")
-            ? img.public_url
-            : `${API_URL}${img.public_url}`,
-          filename: img.filename,
-          dataFormatada,
-          user_favorite: true,
-          type: img.type
-        };
-      });
-
-      setImages(imagesWithUrls);
-    } catch (e: any) {
-      console.warn("Erro ao buscar imagens:", e?.response?.data?.msg || e.message);
-      Alert.alert("Erro", "Não foi possível carregar as imagens.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleDelete = () => {
     if (selectedImageIndex === null) return;
@@ -101,7 +64,6 @@ export function useImagesServices() {
 
   return {
     images,
-    fetchImages,
     loading,
     modalVisible,
     selectedImageIndex,

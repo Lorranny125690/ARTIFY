@@ -33,7 +33,7 @@ export const AccountOptions = () => {
         {/* Opção: Alterar Nome de Usuário */}
         <TouchableOpacity
           style={tw`bg-white/5 p-4 rounded-xl mb-4 flex-row justify-between items-center`}
-          onPress={() => navigation.navigate("userName")}
+          onPress={() => navigation.navigate("UserName")}
         >
           <Text style={tw`text-white text-base`}>Alterar nome de usuário</Text>
           <ArrowRight color="white" size={20} />

@@ -6,6 +6,8 @@ import {
   FlatList,
   TouchableOpacity,
   ScrollView,
+  Alert,
+  Modal,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { DrawerNavigationProp } from "@react-navigation/drawer";
@@ -15,7 +17,9 @@ import tw from "twrnc";
 import { API_URL, useAuth } from "../contexts/AuthContext/authenticatedUser";
 import Axios from "../scripts/axios";
 import * as Animatable from "react-native-animatable";
-
+import { useImagesContext } from "../contexts/ImageContext/imageContext";
+import { openCamera } from "./tools/functions/OpenCamera";
+import { openGallery } from "./tools/functions/OpenGallery";
 
 type Item = {
   name: string;
@@ -41,40 +45,6 @@ const toolSections: { title: string; data: Item[] }[] = [
   },
 ];
 
-const Section: React.FC<{
-  title: string;
-  data: Item[];
-  onPress?: (item: Item) => void;
-}> = ({ title, data, onPress }) => (
-  <Animatable.View
-    animation="fadeInUp"
-    duration={500}
-    delay={100}
-    useNativeDriver
-    style={tw`mt-10 px-2 items-center`}
-  >
-    <Text style={tw`text-white text-lg left-5 font-semibold self-start`}>{title}</Text>
-
-    <FlatList
-      horizontal
-      data={data}
-      keyExtractor={(item) => item.name}
-      renderItem={({ item }) => (
-        <TouchableOpacity
-          onPress={() => onPress?.(item)}
-          style={tw`bg-slate-700 mb-10 w-28 h-28 p-3 rounded-lg items-center justify-center mx-2`}
-        >
-          <Icon name={item.icon} size={24} color="#fff" />
-          <Text style={tw`text-white text-xs mt-2 text-center`}>{item.name}</Text>
-        </TouchableOpacity>
-      )}
-      contentContainerStyle={tw`mt-2 px-4 items-center`}
-      showsHorizontalScrollIndicator={false}
-    />
-  </Animatable.View>
-);
-
-
 type ImageType = {
   type: number;
   id: string;
@@ -87,11 +57,75 @@ type ImageType = {
 
 export const HomeScreen: React.FC = () => {
   const navigation = useNavigation<DrawerNavigationProp<any>>();
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [recentEdits,setRecentEdits] = useState<ImageType[]>([])
-  const [loading, setLoading] = useState<boolean>(true);
   const { authState } = useAuth();
   const token = authState?.token;
+
+  const [recentEdits, setRecentEdits] = useState<ImageType[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
+  const [selectedTool, setSelectedTool] = useState<Item>();
+  const [toolSelectionActive, setToolSelectionActive] = useState(false);
+  const [imageUris, setImageUris] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+
+  const { selectedFilter, setSelectedFilter, uploadImage } = useImagesContext();
+
+  const onToolPress = (tool: Item) => {
+    setSelectedTool(tool);
+    setSelectedFilter(tool.name);
+    setModalVisible(true);
+    setToolSelectionActive(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalVisible(false);
+    setToolSelectionActive(false);
+  };
+
+  const handleCloseConfirmModal = () => {
+    setConfirmModalVisible(false);
+    setToolSelectionActive(false);
+  };
+
+  const onPickImage = async (pickFunc: () => Promise<string[]>) => {
+    const uris = await pickFunc();
+    if (uris.length > 0) {
+      setImageUris(uris);
+      setModalVisible(false);
+      setConfirmModalVisible(true);
+    }
+  };
+
+  const handleConfirmUpload = async () => {
+    if (!selectedFilter) {
+      Alert.alert("Erro", "Selecione um filtro antes.");
+      return;
+    }
+    if (imageUris.length === 0) {
+      Alert.alert("Erro", "Nenhuma imagem selecionada.");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const result = await uploadImage(imageUris, selectedFilter);
+      if (!result || !result.Ids || result.Ids.length === 0) {
+        Alert.alert("Erro", "Falha ao enviar imagens.");
+        return;
+      }
+      Alert.alert("Sucesso", "Imagens enviadas com sucesso!");
+      history(); // atualiza edições recentes
+    } catch (error) {
+      Alert.alert("Erro", "Erro ao enviar imagens.");
+    } finally {
+      setUploading(false);
+      setConfirmModalVisible(false);
+      setToolSelectionActive(false);
+      setImageUris([]);
+    }
+  };
 
   const history = async () => {
     setLoading(true);
@@ -110,8 +144,6 @@ export const HomeScreen: React.FC = () => {
       const imagesWithUrls: ImageType[] = imageProcessed.map((img: any) => {
         const data = img.date ? new Date(img.date) : new Date();
         const dataFormatada = data.toLocaleDateString("pt-BR");
-        const agora = new Date();
-
         return {
           id: img.id,
           uri: img.public_url.startsWith("http") ? img.public_url : `${API_URL}${img.public_url}`,
@@ -137,45 +169,19 @@ export const HomeScreen: React.FC = () => {
     }
   }, [authState?.authenticated]);
 
-  const handleImageUpload = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      alert("Permissão para acessar a galeria é necessária!");
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 1,
-    });
-
-    if (!result.canceled && result.assets.length > 0) {
-      setSelectedImage(result.assets[0].uri);
-    }
-
-    alert("Só upa, não tem filtro funcional")
-  };
-
   return (
     <ScrollView style={tw`flex-1 bg-slate-900`} contentContainerStyle={tw`pb-10`}>
-      {/* Header ainda vou fazer como component nos componets para clean code*/} 
+      {/* Header */}
       <View style={tw`mb-2 bg-slate-800 flex-row justify-between items-center py-2 px-4`}>
-        <View style={tw`flex-row items-center`}>
-          <Image source={require("../assets/iconArtify.png")} style={tw`w-20 h-9`} />
-        </View>
+        <Image source={require("../assets/iconArtify.png")} style={tw`w-20 h-9`} />
         <TouchableOpacity onPress={() => navigation.openDrawer()}>
           <Icon name="bars" size={24} color="#fff" />
         </TouchableOpacity>
       </View>
 
       {/* Edições recentes */}
-      <Animatable.View
-        animation="fadeInUp"
-        delay={50}
-        duration={500}
-        useNativeDriver
-        style={tw`px-4 mb-10 mt-6`}>
-          <Text style={tw`text-white text-lg font-semibold mb-2`}>Usadas recentemente</Text>
+      <Animatable.View animation="fadeInUp" delay={50} duration={500} useNativeDriver style={tw`px-4 mb-10 mt-6`}>
+        <Text style={tw`text-white text-lg font-semibold mb-2`}>Usadas recentemente</Text>
         {recentEdits.length > 0 ? (
           <FlatList
             horizontal
@@ -186,33 +192,47 @@ export const HomeScreen: React.FC = () => {
                 onPress={() => navigation.navigate("Photo", { imageId: item.id })}
                 style={tw`bg-slate-700 p-3 rounded-lg mx-2 top--3 items-center w-28 h-35`}
               >
-                <Image
-                  source={{ uri: item.uri }}
-                  style={tw`w-28 h-35 rounded-lg`}
-                  resizeMode="cover"
-                />
+                <Image source={{ uri: item.uri }} style={tw`w-28 h-35 rounded-lg`} resizeMode="cover" />
               </TouchableOpacity>
             )}
             contentContainerStyle={tw`items-center`}
             showsHorizontalScrollIndicator={false}
           />
         ) : (
-          <Text style={tw`text-gray-400 text-center mt-4`}>
-            Nenhuma edição recente encontrada.
-          </Text>
+          <Text style={tw`text-gray-400 text-center mt-4`}>Nenhuma edição recente encontrada.</Text>
         )}
       </Animatable.View>
 
       {/* Ferramentas agrupadas */}
       {toolSections.map((section) => (
-        <Section onPress={(item) => alert(`${item.name} ainda será implementado!!!`)} key={section.title} title={section.title} data={section.data} />
+        <View key={section.title} style={tw`mt-10 px-2`}>
+          <Text style={tw`text-white text-lg left-5 font-semibold mb-3`}>{section.title}</Text>
+          <FlatList
+            horizontal
+            data={section.data}
+            keyExtractor={(item) => item.name}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                onPress={() => onToolPress(item)}
+                style={tw.style(
+                  "bg-slate-700 w-28 h-28 p-3 rounded-lg items-center justify-center mx-2",
+                  toolSelectionActive && selectedTool?.name === item.name && "border-2 border-cyan-400"
+                )}
+              >
+                <Icon name={item.icon} size={24} color="#fff" />
+                <Text style={tw`text-white text-xs mt-2 text-center`}>{item.name}</Text>
+              </TouchableOpacity>
+            )}
+            showsHorizontalScrollIndicator={false}
+          />
+        </View>
       ))}
 
       {/* Footer */}
-      <View style={tw`bottom-0 top-10 py-4 gap-10 bg-slate-800 items-center justify-center`}>
+      <View style={tw`top-10 py-4 gap-10 bg-slate-800 items-center justify-center`}>
         <View style={tw`flex-row top-2 items-center`}>
           <Text style={tw`text-white mr-30 text-xl font-semibold mb-2`}>Redes sociais</Text>
-          <Image source={require("../assets/iconArtify.png")} style={tw`w-20 h-9`}/>
+          <Image source={require("../assets/iconArtify.png")} style={tw`w-20 h-9`} />
         </View>
         <View style={tw`gap-10 flex-row justify-around w-full max-w-xs`}>
           {["facebook", "github", "envelope", "instagram", "twitter"].map((icon) => (
@@ -220,6 +240,65 @@ export const HomeScreen: React.FC = () => {
           ))}
         </View>
       </View>
+
+      {/* Modal de escolha câmera/galeria */}
+      <Modal visible={modalVisible} transparent animationType="fade">
+        <TouchableOpacity
+          style={tw`flex-1 items-center justify-center bg-black bg-opacity-50`}
+          activeOpacity={1}
+          onPressOut={handleCloseModal}
+        >
+          <View style={tw`bg-slate-800 w-72 p-6 rounded-2xl shadow-lg`}>
+            <Text style={tw`text-white text-lg font-semibold text-center mb-6`}>
+              Como deseja abrir a imagem?
+            </Text>
+            <View style={tw`flex-row justify-around mb-4`}>
+              <TouchableOpacity onPress={() => onPickImage(openCamera)} style={tw`bg-sky-500 px-4 py-3 rounded-lg items-center`}>
+                <Icon name="camera" size={30} color="#fff" />
+                <Text style={tw`text-white font-semibold mt-1`}>Câmera</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => onPickImage(openGallery)} style={tw`bg-teal-500 px-4 py-3 rounded-lg items-center`}>
+                <Icon name="image" size={30} color="#fff" />
+                <Text style={tw`text-white font-semibold mt-1`}>Galeria</Text>
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity onPress={handleCloseModal}>
+              <Text style={tw`text-center text-red-400 text-sm`}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Modal de confirmação */}
+      <Modal visible={confirmModalVisible} transparent animationType="fade">
+        <View style={tw`flex-1 bg-black bg-opacity-70 justify-center items-center px-6`}>
+          <View style={tw`bg-slate-900 rounded-2xl p-4 w-full max-w-xs`}>
+            <Text style={tw`text-white text-lg text-center mb-4`}>Confirmar imagem?</Text>
+            <ScrollView horizontal contentContainerStyle={tw`items-center justify-center`}>
+              {imageUris.map((uri, idx) => (
+                <Image key={idx} source={{ uri }} style={tw`w-40 h-40 m-2 rounded`} />
+              ))}
+            </ScrollView>
+            <View style={tw`flex-row justify-between mt-4`}>
+              <TouchableOpacity
+                onPress={handleCloseConfirmModal}
+                style={tw`flex-1 bg-indigo-600 px-4 py-3 rounded-lg mr-2`}
+              >
+                <Text style={tw`text-white text-center font-semibold`}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleConfirmUpload}
+                style={tw`flex-1 bg-sky-600 px-4 py-3 rounded-lg ml-2`}
+                disabled={uploading}
+              >
+                <Text style={tw`text-white text-center font-semibold`}>
+                  {uploading ? "Enviando..." : "Confirmar"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 };

@@ -37,9 +37,9 @@ interface ImagesContextProps {
   SkinWhitening: (image: ImageType) => Promise<{ id: string } | void>;
   Heat: (image: ImageType) => Promise<{ id: string } | void>;
   Rescale: (img: ImageType, amount: number) => Promise<{ id: string } | void>;
-  Translate: (image: ImageType) => Promise<{ id: string } | void>;
-  Rotate: (image: ImageType) => Promise<{ id: string } | void>;
-  CardinalScale: (image: ImageType) => Promise<{ id: string } | void>;
+  Translate: (img: ImageType, amount1: number, amount2: number) => Promise<{ id: string } | void>;
+  Rotate: (img: ImageType, amount: number, amount1: number) => Promise<{ id: string } | void>;
+  Cardinal: (img: ImageType, amount: number, amount1: number) => Promise<{ id: string } | void>;
   Crop: (image: ImageType) => Promise<{ id: string } | void>;
   Background: (image: ImageType) => Promise<{ id: string } | void>;
 }
@@ -73,6 +73,8 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       const simplifiedList = result.data.simplified;
       const imageProcessed = simplifiedList.filter((img: any) => img.type === 1);
+
+      console.log("Resposta da API:", result.data);
 
       const imagesWithUrls: ImageType[] = imageProcessed.map((img: any) => {
         const data = img.date ? new Date(img.date) : new Date();
@@ -260,16 +262,24 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
   const SkinWhitening = (img: ImageType) => applyFilter("skin_Whitening", img);
   const Heat = (img: ImageType) => applyFilter("heat", img);
-  const Rescale = async (img: ImageType, Scale: number) => {
+  const Rescale = async (img: ImageType, Scale: number): Promise<{ id: string } | void> => {
     try {
       const token = authState?.token;
-
+      if (!token) {
+        Alert.alert("Erro", "Token de autenticação ausente.");
+        return;
+      }
+  
+      const payload = {
+        image_id: img.id,
+        scale: Scale,
+      };
+  
+      console.log("Enviando payload para rgb:", payload);
+  
       const response = await Axios.post(
         `/processes/defined/reescale`,
-        {
-          image_id: img.id,
-          scale: Scale,
-        },
+        payload,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -277,14 +287,151 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         }
       );
   
-      return response.data;
-    } catch (error) {
-      console.error("Erro ao aplicar blur:", error);
+      console.log("Resposta do canny:", response.data);
+  
+      const processedUrl = response.data?.image;
+      console.log(processedUrl)
+
+      if (processedUrl) {
+        navigation.navigate("Photo", { imageId: processedUrl });
+      }
+  
+      await fetchImages();
+  
+      return { id: processedUrl };
+    } catch (error: any) {
+      console.error("Erro ao aplicar canny:", error?.response?.data || error.message);
+      Alert.alert("Erro", "Não foi possível aplicar o filtro de borda (Canny).");
     }
   };
-  const Translate = (img: ImageType) => applyFilter("translate", img);
-  const Rotate = (img: ImageType) => applyFilter("rotate", img);
-  const CardinalScale = (img: ImageType) => applyFilter("cardinal_scale", img);
+  const Translate = async (img: ImageType, amount1: number, amount2: number): Promise<{ id: string } | void> => {
+    try {
+      const token = authState?.token;
+      if (!token) {
+        Alert.alert("Erro", "Token de autenticação ausente.");
+        return;
+      }
+  
+      const payload = {
+        image_id: img.id,
+        x: amount1,
+        y: amount2,
+      };
+  
+      console.log("Enviando payload para rgb:", payload);
+  
+      const response = await Axios.post(
+        `/processes/defined/translate`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      console.log("Resposta do canny:", response.data);
+  
+      const processedUrl = response.data?.image;
+      console.log(processedUrl)
+
+      if (processedUrl) {
+        navigation.navigate("Photo", { imageId: processedUrl });
+      }
+  
+      await fetchImages();
+  
+      return { id: processedUrl };
+    } catch (error: any) {
+      console.error("Erro ao aplicar canny:", error?.response?.data || error.message);
+      Alert.alert("Erro", "Não foi possível aplicar o filtro de borda (Canny).");
+    }
+  };
+  const Rotate = async (img: ImageType, amount: number): Promise<{ id: string } | void> => {
+    try {
+      const token = authState?.token;
+      if (!token) {
+        Alert.alert("Erro", "Token de autenticação ausente.");
+        return;
+      }
+  
+      const payload = {
+        image_id: img.id,
+        angle: amount
+      };
+  
+      console.log("Enviando payload para canny:", payload);
+  
+      const response = await Axios.post(
+        `/processes/defined/rotate`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      console.log("Resposta do canny:", response.data);
+  
+      const processedUrl = response.data?.image;
+      console.log(processedUrl)
+
+      if (processedUrl) {
+        navigation.navigate("Photo", { imageId: processedUrl });
+      }
+  
+      await fetchImages();
+  
+      return { id: processedUrl };
+    } catch (error: any) {
+      console.error("Erro ao aplicar canny:", error?.response?.data || error.message);
+      Alert.alert("Erro", "Não foi possível aplicar o filtro de borda (Canny).");
+    }
+  };
+  const Cardinal = async (img: ImageType, amount: number, amount1: number): Promise<{ id: string } | void> => {
+    try {
+      const token = authState?.token;
+      if (!token) {
+        Alert.alert("Erro", "Token de autenticação ausente.");
+        return;
+      }
+  
+      const payload = {
+        image_id: img.id,
+        xy: amount,
+        sy: amount1
+      };
+  
+      console.log("Enviando payload para canny:", payload);
+  
+      const response = await Axios.post(
+        `/processes/defined/canny`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      console.log("Resposta do canny:", response.data);
+  
+      const processedUrl = response.data?.image;
+      console.log(processedUrl)
+
+      if (processedUrl) {
+        navigation.navigate("Photo", { imageId: processedUrl });
+      }
+  
+      await fetchImages();
+  
+      return { id: processedUrl };
+    } catch (error: any) {
+      console.error("Erro ao aplicar canny:", error?.response?.data || error.message);
+      Alert.alert("Erro", "Não foi possível aplicar o filtro de borda (Canny).");
+    }
+  };
   const Crop = (img: ImageType) => applyFilter("crop", img);
 
   const filterMap: { [key: string]: (img: ImageType) => Promise<{ id: string } | void> } = {
@@ -303,13 +450,13 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     // 🌟 Especiais
     "Remove Background": Background,
     "Pixelização Total": Pixelate,
-    "Blur": (img) => Blur(img, 5),
+    "Blur": (img) => Blur(img, 7),
   
     // 🔄 Transformações
     "Resize": (img) => Rescale(img, 2),
-    "Rotação": Rotate,
-    "Translação (warpAffine)": Translate,
-    "Escala (Cardinal)": CardinalScale,
+    "Rotação": (img) => Rotate(img, 60),
+    "Translação (warpAffine)": (img) => Translate(img, 30, 30),
+    "Escala (Cardinal)": (img) => Cardinal(img, 30, 30),
     "Flip X": Flip,
     "Cropping": Crop,
   
@@ -453,7 +600,7 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         Rescale,
         Translate,
         Rotate,
-        CardinalScale,
+        Cardinal,
         Crop,
         Background
       }}
