@@ -40,7 +40,7 @@ interface ImagesContextProps {
   Translate: (img: ImageType, amount1: number, amount2: number) => Promise<{ id: string } | void>;
   Rotate: (img: ImageType, amount: number, amount1: number) => Promise<{ id: string } | void>;
   Cardinal: (img: ImageType, amount: number, amount1: number) => Promise<{ id: string } | void>;
-  Crop: (image: ImageType) => Promise<{ id: string } | void>;
+  Crop: (img: ImageType, amount: number, amount1: number, amout3: number, amount4: number) => Promise<{ id: string } | void>;
   Background: (image: ImageType) => Promise<{ id: string } | void>;
 }
 
@@ -199,10 +199,6 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   
       const processedUrl = response.data?.image;
       console.log(processedUrl)
-
-      if (processedUrl) {
-        navigation.navigate("Photo", { imageId: processedUrl });
-      }
   
       await fetchImages();
   
@@ -247,10 +243,6 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   
       const processedUrl = response.data?.image;
       console.log(processedUrl)
-
-      if (processedUrl) {
-        navigation.navigate("Photo", { imageId: processedUrl });
-      }
   
       await fetchImages();
   
@@ -291,10 +283,6 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   
       const processedUrl = response.data?.image;
       console.log(processedUrl)
-
-      if (processedUrl) {
-        navigation.navigate("Photo", { imageId: processedUrl });
-      }
   
       await fetchImages();
   
@@ -334,10 +322,6 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   
       const processedUrl = response.data?.image;
       console.log(processedUrl)
-
-      if (processedUrl) {
-        navigation.navigate("Photo", { imageId: processedUrl });
-      }
   
       await fetchImages();
   
@@ -376,10 +360,6 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   
       const processedUrl = response.data?.image;
       console.log(processedUrl)
-
-      if (processedUrl) {
-        navigation.navigate("Photo", { imageId: processedUrl });
-      }
   
       await fetchImages();
   
@@ -419,10 +399,6 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   
       const processedUrl = response.data?.image;
       console.log(processedUrl)
-
-      if (processedUrl) {
-        navigation.navigate("Photo", { imageId: processedUrl });
-      }
   
       await fetchImages();
   
@@ -432,7 +408,44 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       Alert.alert("Erro", "Não foi possível aplicar o filtro de borda (Canny).");
     }
   };
-  const Crop = (img: ImageType) => applyFilter("crop", img);
+  const Crop = async (img: ImageType, amount: number, amount1: number, amount3: number, amount4: number): Promise<{ id: string } | void> => {
+    try {
+      const token = authState?.token;
+      if (!token) {
+        Alert.alert("Erro", "Token de autenticação ausente.");
+        return;
+      }
+  
+      const payload = {
+        image_id: img.id,
+        x: amount,
+        y: amount1,
+        w: amount3,
+        h: amount4,
+      };
+  
+      console.log("Enviando payload para canny:", payload);
+  
+      const response = await Axios.post(
+        `/processes/defined/crop`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      const processedUrl = response.data?.process?.id;
+  
+      await fetchImages();
+  
+      return { id: processedUrl };
+    } catch (error: any) {
+      console.error("Erro ao aplicar canny:", error?.response?.data || error.message);
+      Alert.alert("Erro", "Não foi possível aplicar o filtro de borda (Canny).");
+    }
+  };
 
   const filterMap: { [key: string]: (img: ImageType) => Promise<{ id: string } | void> } = {
     // 🎨 Filtros
@@ -456,9 +469,9 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     "Resize": (img) => Rescale(img, 2),
     "Rotação": (img) => Rotate(img, 60),
     "Translação (warpAffine)": (img) => Translate(img, 30, 30),
-    "Escala (Cardinal)": (img) => Cardinal(img, 30, 30),
+    "Escala (Cardinal)": (img) => Cardinal(img, 10, 10),
     "Flip X": Flip,
-    "Cropping": Crop,
+    "Cropping": (img) => Crop(img, 5, 5, 2, 2),
   
     // ❓Possíveis futuros (você pode implementar depois)
     // "Pixelização facial": PixelateFace,
