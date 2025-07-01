@@ -26,7 +26,7 @@ export const EmailScreen: React.FC = () => {
   const handleSendCode = async (): Promise<void> => {
     setMessage("");
     try {
-      const response = await Axios.post(
+      const response = await Axios.patch(
         "/auth",
         { email }
       );

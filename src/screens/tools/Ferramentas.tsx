@@ -230,9 +230,9 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
           <View style={tw`bg-slate-900 rounded-2xl p-4 w-full max-w-xs`}>
             <Text style={tw`text-white text-lg text-center mb-4`}>Confirmar imagem?</Text>
 
-            <ScrollView horizontal>
+            <ScrollView contentContainerStyle={tw`justify-center items-center p-4`}horizontal>
               {imageUris.map((uri, index) => (
-                <Image key={index} source={{ uri }} style={{ width: 100, height: 100, marginRight: 10 }} />
+                <Image key={index} source={{ uri }} style={tw`left-5 w-50 h-50 m-2`} />
               ))}
             </ScrollView>
             <View style={tw`flex-row justify-between`}>

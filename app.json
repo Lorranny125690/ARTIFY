@@ -20,7 +20,12 @@
         "foregroundImage": "./src/assets/Artify.png",
         "backgroundColor": "#000000"
       },
-      "package": "com.lorrapaz.Artify"
+      "package": "com.lorrapaz.Artify",
+      "navigationBar": {
+        "visible": "visible",
+        "barStyle": "light-content",
+        "backgroundColor": "#000000"
+      }
     },
     "web": {
       "favicon": "./src/assets/Artify.png"

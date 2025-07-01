@@ -6,13 +6,14 @@ import { ArrowLeft } from "lucide-react-native";
 import tw from "twrnc";
 import { RootStackParamList } from "../../types/rootStackParamList";
 import { useRoute, RouteProp } from "@react-navigation/native";
+import Axios from "../../scripts/axios";
 
 export const VerificationScreen = () => {
     const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
     const route = useRoute<RouteProp<RootStackParamList, 'Recuperação'>>();
     const email = route.params?.email;
   
-    const [code, setCode] = useState(['', '', '', '', '']);
+    const [code, setCode] = useState(new Array(5).fill(''));
     const inputsRef = useRef<Array<TextInput | null>>([]);
   
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -22,13 +23,13 @@ export const VerificationScreen = () => {
   
     const handleChange = (text: string, index: number) => {
       if (text.length > 1) return;
-      if (text && !/^\d$/.test(text)) return; // impede entrada não numérica
+      if (text && !/^\d$/.test(text)) return;
     
       const newCode = [...code];
       newCode[index] = text;
       setCode(newCode);
     
-      if (text && index < 4) {
+      if (text && index < 9) {
         inputsRef.current[index + 1]?.focus();
       }
     };    
@@ -39,34 +40,29 @@ export const VerificationScreen = () => {
   
     const handleSubmit = async () => {
       const fullCode = code.join('');
-      if (fullCode.length < 5) return;
+      if (fullCode.length < 4) return;
     
       setIsSubmitting(true);
       setMessage('');
     
       try {
-        const response = await fetch(`https://sua-api.com/auth/verify`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email, code: fullCode }),
-        });
-    
-        const data = await response.json();
-    
-        if (response.ok) {
-          setMessage('✅ Código verificado com sucesso!');
-          navigation.navigate("Login");
-        } else {
-          setMessage('❌ Código incorreto. Tente novamente.');
+        const response = await Axios.put("/auth", {
+        passport: fullCode,
+        newPassword: "123457"
+      }, {
+        headers: {
+          "Content-Type": "application/json"
         }
-      } catch (err) {
-        setMessage('❌ Erro de rede');
-      } finally {
-        setIsSubmitting(false);
+      });
+  
+      if (response.status === 200) {
+        console.log("Sucesso", response.data);
+      } else {
+        console.log("Erro:", response.status, response.data);
       }
-    };    
+    } catch (error) {
+      console.error("Erro de rede ou servidor:", error);
+    }}
   
     const handleResend = () => {
       setMessage('');
