@@ -11,4 +11,7 @@ export type RootStackParamList = {
   Profile: undefined;
   Favoritos: undefined;
   Historico: undefined;
+  Password: undefined;
+  userName: undefined;
+  Choice: undefined
 };

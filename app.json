@@ -20,12 +20,7 @@
         "foregroundImage": "./src/assets/Artify.png",
         "backgroundColor": "#000000"
       },
-      "package": "com.lorrapaz.Artify",
-      "navigationBar": {
-        "visible": "visible",
-        "barStyle": "light-content",
-        "backgroundColor": "#000000"
-      }
+      "package": "com.lorrapaz.Artify"
     },
     "web": {
       "favicon": "./src/assets/Artify.png"
@@ -35,6 +30,9 @@
         "projectId": "a56c406d-ed6b-4b52-8425-7954b49529a9"
       }
     },
-    "owner": "lorrapaz"
+    "owner": "lorrapaz",
+    "plugins": [
+      "expo-router"
+    ]
   }
 }

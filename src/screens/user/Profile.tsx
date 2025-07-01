@@ -17,7 +17,6 @@ import type { RootStackParamList } from "../../types/rootStackParamList";
 import { useAuth } from "../../contexts/AuthContext/authenticatedUser";
 import Axios from "../../scripts/axios";
 import { MotiView, MotiText } from "moti";
-import { useImagesContext } from "../../contexts/ImageContext/imageContext";
 
 export type ImageType = {
   type: number;
@@ -97,23 +96,6 @@ export function UserProfile() {
     }
   }, [authState]);  
 
-  const [favoritos] = useState([
-    {
-      id: 1,
-      titulo: "Imagem 1",
-      acao: "Remoção de fundo",
-      data: "08/04/2025",
-      hora: "10:24",
-    },
-    {
-      id: 2,
-      titulo: "Imagem 2",
-      acao: "Rotacionar",
-      data: "08/04/2025",
-      hora: "10:24",
-    },
-  ]);
-
   return (
     <SafeAreaView style={tw`flex-1 bg-slate-900`}>
       <View style={tw`flex-1 p-5`}>
@@ -128,47 +110,46 @@ export function UserProfile() {
         </TouchableOpacity>
 
         {/* Info Usuário */}
-                {/* Cabeçalho */}
-                <MotiView
-  from={{ opacity: 0, translateY: -20 }}
-  animate={{ opacity: 1, translateY: 0 }}
-  transition={{ type: 'timing', duration: 500 }}
-  style={tw`mb-6 justify-content items-center gap-2 left-1.5 flex-row`}
->
-        <View style={tw`flex-row items-center mb-6`}>
+        <MotiView
+        from={{ opacity: 0, translateY: -20 }}
+        animate={{ opacity: 1, translateY: 0 }}
+        transition={{ type: 'timing', duration: 500 }}
+        style={tw`mb-6 justify-content items-center gap-2 left-1.5 flex-row`}
+        >
+          <TouchableOpacity onPress={() => navigation.navigate("Choice")} style={tw`flex-row items-center mb-6`}>
           <View style={tw`w-12 h-12 rounded-full bg-white mr-3 items-center justify-center`}>
             <CircleUserRound color="#334155" size={45} />
           </View>
           <View>
             <Text style={tw`text-white text-base font-semibold`}>
-            {userName != undefined ? userName : "Cadastre-se"}
+              {userName != undefined ? userName : "Cadastre-se"}
             </Text>
             <Text style={tw`text-slate-400 text-sm`}>Usuário ativo</Text>
           </View>
-        </View></MotiView>
+          </TouchableOpacity>
+        </MotiView>
 
-        {/* Lista de Favoritos */}
+          {/* Lista de Favoritos */}
         <Text style={tw`text-white text-2xl font-bold mb-3`}>Historico</Text>
         <ScrollView contentContainerStyle={tw`pb-24`}>
-  {images.map((item, index) => (
-    <MotiView
-      key={item.id}
-      from={{ opacity: 0, translateY: 20 }}
-      animate={{ opacity: 1, translateY: 0 }}
-      transition={{ delay: index * 100, type: 'timing', duration: 400 }}
-      style={tw`flex-row justify-between items-center py-3 border-b border-slate-700`}
-    >
-      <View>
-        <Text style={tw`text-white text-xl font-semibold`}>{item.nome}</Text>
-        <Text style={tw`text-slate-400 text-xs`}>{item.filename}</Text>
-      </View>
-      <View>
-        <Text style={tw`text-slate-400 text-xs text-right`}>{item.dataFormatada}</Text>
-      </View>
-    </MotiView>
-  ))}
-</ScrollView>
-
+          {images.map((item, index) => (
+            <MotiView
+              key={item.id}
+              from={{ opacity: 0, translateY: 20 }}
+              animate={{ opacity: 1, translateY: 0 }}
+              transition={{ delay: index * 100, type: 'timing', duration: 400 }}
+              style={tw`flex-row justify-between items-center py-3 border-b border-slate-700`}
+            >
+              <View>
+                <Text style={tw`text-white text-xl font-semibold`}>{item.nome}</Text>
+                <Text style={tw`text-slate-400 text-xs`}>{item.filename}</Text>
+              </View>
+              <View>
+                <Text style={tw`text-slate-400 text-xs text-right`}>{item.dataFormatada}</Text>
+              </View>
+            </MotiView>
+          ))}
+        </ScrollView>
 
         {/* Botões */}
         <View style={tw`absolute bottom-5 left-5 right-5 gap-4`}>
