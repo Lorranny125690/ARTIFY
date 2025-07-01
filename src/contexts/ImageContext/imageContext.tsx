@@ -399,14 +399,14 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   
       const payload = {
         image_id: img.id,
-        xy: amount,
+        sx: amount,
         sy: amount1
       };
   
       console.log("Enviando payload para canny:", payload);
   
       const response = await Axios.post(
-        `/processes/defined/canny`,
+        `/processes/defined/cardinal_scale`,
         payload,
         {
           headers: {
