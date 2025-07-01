@@ -62,7 +62,6 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
   };
   
-
   const fetchImages = async () => {
     setLoading(true);
     try {
@@ -164,12 +163,50 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       Alert.alert("Erro", "Não foi possível aplicar o filtro de desfoque.");
     }
   };
+
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const PencilSketch = (img: ImageType) => applyFilter("pencil_sketch_filter", img);
   const Cartoon = (img: ImageType) => applyFilter("cartoon_filter", img);
   const Sepia = (img: ImageType) => applyFilter("sepia_filter", img);
   const Flip = (img: ImageType) => applyFilter("flip", img);
-  const ChangeBrightness = (img: ImageType) => applyFilter("change_brightness", img);
+  const ChangeBrightness = async (img: ImageType, amount: number): Promise<{ id: string } | void> => {
+    try {
+      const token = authState?.token;
+      if (!token) {
+        Alert.alert("Erro", "Token de autenticação ausente.");
+        return;
+      }
+  
+      const payload = {
+        image_id: img.id,
+        Amount: amount
+      };
+  
+      console.log("Enviando payload para canny:", payload);
+  
+      const response = await Axios.post(
+        `/processes/defined/change_brightness`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      console.log("Resposta do canny:", response.data);
+  
+      const processedUrl = response.data?.image;
+      console.log(processedUrl)
+  
+      await fetchImages();
+  
+      return { id: processedUrl };
+    } catch (error: any) {
+      console.error("Erro ao aplicar canny:", error?.response?.data || error.message);
+      Alert.alert("Erro", "Não foi possível aplicar o filtro de borda (Canny).");
+    }
+  };
   const Canny = async (img: ImageType, amount: number): Promise<{ id: string } | void> => {
     try {
       const token = authState?.token;
@@ -252,6 +289,7 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       Alert.alert("Erro", "Não foi possível aplicar o filtro de borda (Canny).");
     }
   };
+
   const SkinWhitening = (img: ImageType) => applyFilter("skin_Whitening", img);
   const Heat = (img: ImageType) => applyFilter("heat", img);
   const Rescale = async (img: ImageType, Scale: number): Promise<{ id: string } | void> => {
@@ -292,6 +330,7 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       Alert.alert("Erro", "Não foi possível aplicar o filtro de borda (Canny).");
     }
   };
+
   const Translate = async (img: ImageType, amount1: number, amount2: number): Promise<{ id: string } | void> => {
     try {
       const token = authState?.token;
@@ -331,6 +370,7 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       Alert.alert("Erro", "Não foi possível aplicar o filtro de borda (Canny).");
     }
   };
+
   const Rotate = async (img: ImageType, amount: number): Promise<{ id: string } | void> => {
     try {
       const token = authState?.token;
@@ -408,6 +448,7 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       Alert.alert("Erro", "Não foi possível aplicar o filtro de borda (Canny).");
     }
   };
+
   const Crop = async (img: ImageType, amount: number, amount1: number, amount3: number, amount4: number): Promise<{ id: string } | void> => {
     try {
       const token = authState?.token;
@@ -454,7 +495,7 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     "Filtro de Cartoon": Cartoon,
     "Filtro de Cor Personalizada (RGB Boost)": (img) => RGBBoost(img, 10, 10, 10),
     "Filtro de Inversão (Negative)": Negative,
-    "Filtro de Brilho e Contraste": ChangeBrightness,
+    "Filtro de Brilho e Contraste": (img) => ChangeBrightness(img, 100),
     "Filtro de Clareamento de Pele": SkinWhitening,
     "Filtro de Calor (Thermal)": Heat,
     "Filtro de Desenho a Lápis": PencilSketch,

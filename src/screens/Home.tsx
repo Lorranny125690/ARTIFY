@@ -8,6 +8,7 @@ import {
   ScrollView,
   Alert,
   Modal,
+  Linking,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { DrawerNavigationProp } from "@react-navigation/drawer";
@@ -18,6 +19,7 @@ import { API_URL, useAuth } from "../contexts/AuthContext/authenticatedUser";
 import Axios from "../scripts/axios";
 import * as Animatable from "react-native-animatable";
 import { useImagesContext } from "../contexts/ImageContext/imageContext";
+
 import { openCamera } from "./tools/functions/OpenCamera";
 import { openGallery } from "./tools/functions/OpenGallery";
 
@@ -169,114 +171,139 @@ export const HomeScreen: React.FC = () => {
     }
   }, [authState?.authenticated]);
 
-  return (
-    <ScrollView style={tw`flex-1 bg-slate-900`} contentContainerStyle={tw`pb-10`}>
-      {/* Header */}
-      <View style={tw`mb-2 bg-slate-800 flex-row justify-between items-center py-2 px-4`}>
-        <Image source={require("../assets/iconArtify.png")} style={tw`w-20 h-9`} />
-        <TouchableOpacity onPress={() => navigation.openDrawer()}>
-          <Icon name="bars" size={24} color="#fff" />
-        </TouchableOpacity>
-      </View>
+return (
+  <View style={tw`flex-1 bg-slate-900`}>
+    <View style={tw`mb-2 bg-slate-800 flex-row justify-between items-center py-2 px-4`}>
+      <Image source={require("../assets/iconArtify.png")} style={tw`w-20 h-9`} />
+      <TouchableOpacity onPress={() => navigation.openDrawer()}>
+        <Icon name="bars" size={24} color="#fff" />
+      </TouchableOpacity>
+    </View>
 
-      {/* Edições recentes */}
-      <Animatable.View animation="fadeInUp" delay={50} duration={500} useNativeDriver style={tw`px-4 mb-10 mt-6`}>
-        <Text style={tw`text-white text-lg font-semibold mb-2`}>Usadas recentemente</Text>
-        {recentEdits.length > 0 ? (
-          <FlatList
-            horizontal
-            data={recentEdits}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                onPress={() => navigation.navigate("Photo", { imageId: item.id })}
-                style={tw`bg-slate-700 p-3 rounded-lg mx-2 top--3 items-center w-28 h-35`}
-              >
-                <Image source={{ uri: item.uri }} style={tw`w-28 h-35 rounded-lg`} resizeMode="cover" />
-              </TouchableOpacity>
-            )}
-            contentContainerStyle={tw`items-center`}
-            showsHorizontalScrollIndicator={false}
-          />
-        ) : (
-          <Text style={tw`text-gray-400 text-center mt-4`}>Nenhuma edição recente encontrada.</Text>
-        )}
-      </Animatable.View>
-
-      {/* Ferramentas agrupadas */}
-      {toolSections.map((section) => (
-        <View key={section.title} style={tw`mt-10 px-2`}>
-          <Text style={tw`text-white text-lg left-5 font-semibold mb-3`}>{section.title}</Text>
-          <FlatList
-            horizontal
-            data={section.data}
-            keyExtractor={(item) => item.name}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                onPress={() => onToolPress(item)}
-                style={tw.style(
-                  "bg-slate-700 w-28 h-28 p-3 rounded-lg items-center justify-center mx-2",
-                  toolSelectionActive && selectedTool?.name === item.name && "border-2 border-cyan-400"
-                )}
-              >
-                <Icon name={item.icon} size={24} color="#fff" />
-                <Text style={tw`text-white text-xs mt-2 text-center`}>{item.name}</Text>
-              </TouchableOpacity>
-            )}
-            showsHorizontalScrollIndicator={false}
-          />
+    <View style={tw`flex-1 justify-between`}>
+      <ScrollView contentContainerStyle={tw`pb-10`}>
+        {/* Edições recentes */}
+        <View style={tw`px-4 mt-6`}>
+          <Text style={tw`text-white text-lg font-semibold mb-2`}>Usadas recentemente</Text>
+          {recentEdits.length > 0 ? (
+            <FlatList
+              horizontal
+              data={recentEdits}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item, index }) => (
+                <View style={tw`w-28 h-35 mx-2`}>
+                  <Animatable.View
+                    animation="fadeInUp"
+                    delay={index * 100}
+                    duration={400}
+                    useNativeDriver
+                  >
+                    <TouchableOpacity onPress={() => navigation.navigate("Photo", { imageId: item.id })}>
+                      <Image source={{ uri: item.uri }} style={tw`w-28 h-35 rounded-lg`} resizeMode="cover" />
+                    </TouchableOpacity>
+                  </Animatable.View>
+                </View>
+              )}
+              contentContainerStyle={tw`items-center`}
+              showsHorizontalScrollIndicator={false}
+            />
+          ) : (
+            <Text style={tw`text-gray-400 text-center mt-4`}>
+              Nenhuma edição recente encontrada.
+            </Text>
+          )}
         </View>
-      ))}
 
-      {/* Footer */}
-      <View style={tw`top-10 py-4 gap-10 bg-slate-800 items-center justify-center`}>
-        <View style={tw`flex-row top-2 items-center`}>
+        {/* Ferramentas agrupadas */}
+        {toolSections.map((section) => (
+          <View key={section.title} style={tw`mt-10 px-2`}>
+            <Text style={tw`text-white text-lg left-5 font-semibold mb-3`}>{section.title}</Text>
+            <FlatList
+              horizontal
+              data={section.data}
+              keyExtractor={(item) => item.name}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  onPress={() => onToolPress(item)}
+                  style={tw.style(
+                    "bg-slate-700 left-4 w-28 h-28 p-3 rounded-lg items-center justify-center mx-2",
+                    toolSelectionActive && selectedTool?.name === item.name && "border-2 border-cyan-400"
+                  )}
+                >
+                  <Icon name={item.icon} size={24} color="#fff" />
+                  <Text style={tw`text-white text-xs mt-2 text-center`}>{item.name}</Text>
+                </TouchableOpacity>
+              )}
+              showsHorizontalScrollIndicator={false}
+            />
+          </View>
+        ))}
+      </ScrollView>
+
+      {/* Footer sempre no fim da tela */}
+      <View style={tw`py-6 gap-10 bg-slate-800 items-center justify-center`}>
+        <View style={tw`flex-row items-center`}>
           <Text style={tw`text-white mr-30 text-xl font-semibold mb-2`}>Redes sociais</Text>
           <Image source={require("../assets/iconArtify.png")} style={tw`w-20 h-9`} />
         </View>
         <View style={tw`gap-10 flex-row justify-around w-full max-w-xs`}>
-          {["facebook", "github", "envelope", "instagram", "twitter"].map((icon) => (
-            <Icon key={icon} name={icon} size={20} color="#fff" />
+        {[
+            { icon: "facebook", url: "https://www.facebook.com/seuPerfil" },
+            { icon: "github", url: "https://github.com/Lorranny125690/ARTIFY" },
+            { icon: "envelope", url: "mailto:lorrannyyasmin6@gmail.com" },
+            { icon: "instagram", url: "https://www.instagram.com/lorrapaz?igsh=MXg5ejA5cjRnZXh3Yw==" },
+            { icon: "twitter", url: "https://x.com/Lorr827271?t=4ROfdaddii4QZKtmUcAibA&s=09" },
+          ].map(({ icon, url }) => (
+            <TouchableOpacity key={icon} onPress={() => Linking.openURL(url)}>
+              <Icon name={icon} size={20} color="#fff" />
+            </TouchableOpacity>
           ))}
         </View>
       </View>
-
-      {/* Modal de escolha câmera/galeria */}
+      </View>
       <Modal visible={modalVisible} transparent animationType="fade">
-        <TouchableOpacity
-          style={tw`flex-1 items-center justify-center bg-black bg-opacity-50`}
-          activeOpacity={1}
-          onPressOut={handleCloseModal}
-        >
-          <View style={tw`bg-slate-800 w-72 p-6 rounded-2xl shadow-lg`}>
-            <Text style={tw`text-white text-lg font-semibold text-center mb-6`}>
-              Como deseja abrir a imagem?
-            </Text>
-            <View style={tw`flex-row justify-around mb-4`}>
-              <TouchableOpacity onPress={() => onPickImage(openCamera)} style={tw`bg-sky-500 px-4 py-3 rounded-lg items-center`}>
-                <Icon name="camera" size={30} color="#fff" />
-                <Text style={tw`text-white font-semibold mt-1`}>Câmera</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => onPickImage(openGallery)} style={tw`bg-teal-500 px-4 py-3 rounded-lg items-center`}>
-                <Icon name="image" size={30} color="#fff" />
-                <Text style={tw`text-white font-semibold mt-1`}>Galeria</Text>
-              </TouchableOpacity>
-            </View>
-            <TouchableOpacity onPress={handleCloseModal}>
-              <Text style={tw`text-center text-red-400 text-sm`}>Cancelar</Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      </Modal>
+  <TouchableOpacity
+    style={tw`flex-1 items-center justify-center bg-black bg-opacity-50`}
+    activeOpacity={1}
+    onPressOut={handleCloseModal}
+  >
+    <View style={tw`bg-slate-800 w-72 p-6 rounded-2xl shadow-lg`}>
+      <Text style={tw`text-white text-lg font-semibold text-center mb-6`}>
+        Como deseja abrir a imagem?
+      </Text>
 
-      {/* Modal de confirmação */}
+      <View style={tw`flex-row justify-around mb-4`}>
+        <TouchableOpacity
+          onPress={() => onPickImage(openCamera)}
+          style={tw`bg-sky-500 px-4 py-3 rounded-lg items-center`}
+        >
+          <Icon name="camera" size={30} color="#fff" />
+          <Text style={tw`text-white font-semibold mt-1`}>Câmera</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => onPickImage(openGallery)}
+          style={tw`bg-teal-500 px-4 py-3 rounded-lg items-center`}
+        >
+          <Icon name="image" size={30} color="#fff" />
+          <Text style={tw`text-white font-semibold mt-1`}>Galeria</Text>
+        </TouchableOpacity>
+      </View>
+
+      <TouchableOpacity onPress={handleCloseModal}>
+        <Text style={tw`text-center text-red-400 text-sm`}>Cancelar</Text>
+      </TouchableOpacity>
+    </View>
+  </TouchableOpacity>
+</Modal>
+
       <Modal visible={confirmModalVisible} transparent animationType="fade">
         <View style={tw`flex-1 bg-black bg-opacity-70 justify-center items-center px-6`}>
           <View style={tw`bg-slate-900 rounded-2xl p-4 w-full max-w-xs`}>
             <Text style={tw`text-white text-lg text-center mb-4`}>Confirmar imagem?</Text>
             <ScrollView horizontal contentContainerStyle={tw`items-center justify-center`}>
-              {imageUris.map((uri, idx) => (
-                <Image key={idx} source={{ uri }} style={tw`w-40 h-40 m-2 rounded`} />
+              {imageUris.map((uri, index) => (
+                <Image key={index} source={{ uri }} style={tw`left-5 w-50 h-50 m-2`} />
               ))}
             </ScrollView>
             <View style={tw`flex-row justify-between mt-4`}>
@@ -299,6 +326,6 @@ export const HomeScreen: React.FC = () => {
           </View>
         </View>
       </Modal>
-    </ScrollView>
-  );
-};
+    </View>
+)};
+
