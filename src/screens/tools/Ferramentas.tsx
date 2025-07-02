@@ -79,7 +79,6 @@ const detecaoRealceSection: { title: string; data: Item[] } = {
     { name: "Chromatic Aberration", icon: "eye" },
     { name: "Blur", icon: "eye-slash" },
     { name: "Pixelização facial", icon: "th-large" },
-    { name: "Remover Background em Vídeo", icon: "video-camera" },
     { name: "Detecção de Rostos com IA", icon: "user-circle" },
   ],
 };

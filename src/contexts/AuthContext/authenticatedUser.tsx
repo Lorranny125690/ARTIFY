@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store'
 import { createContext, useContext, useEffect, useState } from 'react';
@@ -13,7 +12,7 @@ interface AuthProps {
     onLogout?: () => Promise<any>;
 }
 
-export const API_URL = 'https://image-smith.onrender.com' 
+export const API_URL = 'https://image-smith-1.onrender.com' 
 const AuthContext = createContext<AuthProps>({})
 
 export const useAuth = () => {
