@@ -34,11 +34,6 @@ export const WelcomeScreen = () => {
       >
         <Text style={tw`text-white text-lg font-semibold`}>Login</Text>
       </TouchableOpacity>
-
-      {/* Link "Entrar sem uma conta" */}
-      <TouchableOpacity onPress={() => navigation.navigate("Home")}>
-        <Text onPress={() => alert("Apenas para o desenvolvimento. Ainda sendo trabalhada.")} style={tw`text-gray-400 mt-6 underline`}>Entrar sem uma conta</Text>
-      </TouchableOpacity>
     </View>
   );
 };

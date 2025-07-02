@@ -18,8 +18,7 @@ import tw from "twrnc";
 import { API_URL, useAuth } from "../contexts/AuthContext/authenticatedUser";
 import Axios from "../scripts/axios";
 import * as Animatable from "react-native-animatable";
-import { useImagesContext } from "../contexts/ImageContext/imageContext";
-
+import { useImagesContext, type ImageType } from "../contexts/ImageContext/imageContext";
 import { openCamera } from "./tools/functions/OpenCamera";
 import { openGallery } from "./tools/functions/OpenGallery";
 
@@ -47,15 +46,6 @@ const toolSections: { title: string; data: Item[] }[] = [
   },
 ];
 
-type ImageType = {
-  type: number;
-  id: string;
-  uri: string;
-  filename: string;
-  nome: string;
-  dataFormatada: string;
-  favorite: boolean;
-};
 
 export const HomeScreen: React.FC = () => {
   const navigation = useNavigation<DrawerNavigationProp<any>>();

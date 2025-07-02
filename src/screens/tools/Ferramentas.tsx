@@ -258,20 +258,9 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
   );
 };
 
-type ImageType = {
-  type: number;
-  id: string;
-  uri: string;
-  filename: string;
-  nome: string;
-  dataFormatada: string;
-  favorite: boolean;
-};
-
 export const Ferramentas: React.FC = () => {
   const navigation = useNavigation<DrawerNavigationProp<any>>();
   const { authState } = useAuth();
-  const [recentEdits, setRecentEdits] = useState<ImageType[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const token = authState?.token;
 
