@@ -487,6 +487,41 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       Alert.alert("Erro", "Não foi possível aplicar o filtro de borda (Canny).");
     }
   };
+  const Face = async (img: ImageType, operation: string): Promise<{ id: string } | void> => {
+    try {
+      const token = authState?.token;
+      if (!token) {
+        Alert.alert("Erro", "Token de autenticação ausente.");
+        return;
+      }
+  
+      const payload = {
+        image_id: img.id,
+        operation: operation
+      };
+  
+      console.log("Enviando payload para canny:", payload);
+  
+      const response = await Axios.post(
+        `/processes/defined/face_detection`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      const processedUrl = response.data?.process?.id;
+  
+      await fetchImages();
+  
+      return { id: processedUrl };
+    } catch (error: any) {
+      console.error("Erro ao aplicar canny:", error?.response?.data || error.message);
+      Alert.alert("Erro", "Não foi possível aplicar o filtro de borda (Canny).");
+    }
+  };
 
   const filterMap: { [key: string]: (img: ImageType) => Promise<{ id: string } | void> } = {
     // 🎨 Filtros
@@ -515,9 +550,9 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     "Cropping": (img) => Crop(img, 5, 5, 2, 2),
   
     // ❓Possíveis futuros (você pode implementar depois)
-    // "Pixelização facial": PixelateFace,
+    "Pixelização facial": (img) => Face(img, "censor"),
     // "Remover Background em Vídeo": removeVideoBackground,
-    // "Detecção de Rostos com IA": faceDetection,
+    "Detecção de Rostos com IA": (img) => Face(img, "isolate"),
   };   
 
   const uploadImage = async (imageUris: string[], filterName: string): Promise<{ Ids: string[] } | void> => {

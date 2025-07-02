@@ -114,7 +114,6 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
     setToolSelectionActive(false)
   };
 
-  // Função que abre câmera ou galeria e mostra o preview para confirmação
   const onPickImage = async (pickFunc: () => Promise<string[]>) => {
     const uris = await pickFunc();
     if (uris.length > 0) {
