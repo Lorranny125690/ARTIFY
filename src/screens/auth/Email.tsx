@@ -44,9 +44,8 @@ export const EmailScreen: React.FC = () => {
         setMessage("❌ Erro de rede");
       }
     }
-  };  
+  };
   
-
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : undefined}

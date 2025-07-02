@@ -292,10 +292,10 @@ return (
 
       <TouchableOpacity onPress={handleCloseModal}>
         <Text style={tw`text-center text-red-400 text-sm`}>Cancelar</Text>
-      </TouchableOpacity>
-    </View>
-  </TouchableOpacity>
-</Modal>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       <Modal visible={confirmModalVisible} transparent animationType="fade">
         <View style={tw`flex-1 bg-black bg-opacity-70 justify-center items-center px-6`}>

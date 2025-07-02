@@ -52,15 +52,6 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
   const [modalMsg, setModalMsg] = useState("");
   const { authState } = useAuth();
-  const showToast = (type: 'success' | 'error' | 'info', title: string, message?: string) => {
-    Toast.show({
-      type,
-      text1: title,
-      text2: message,
-      position: 'bottom',
-      visibilityTime: 3000,
-    });
-  };
   
   const fetchImages = async () => {
     setLoading(true);
@@ -92,7 +83,7 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setImages(imagesWithUrls);
     } catch (e: any) {
       console.warn("Erro ao buscar imagens:", e?.response?.data?.msg || e.message);
-      showToast('error', 'Erro ao carregar imagens', 'Tente novamente mais tarde.');
+      Alert.alert('error', 'Erro ao carregar imagens');
     } finally {
       setLoading(false);
     }
@@ -409,6 +400,7 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       Alert.alert("Erro", "Não foi possível aplicar o filtro de borda (Canny).");
     }
   };
+
   const Cardinal = async (img: ImageType, amount: number, amount1: number): Promise<{ id: string } | void> => {
     try {
       const token = authState?.token;
@@ -487,6 +479,7 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       Alert.alert("Erro", "Não foi possível aplicar o filtro de borda (Canny).");
     }
   };
+
   const Face = async (img: ImageType, operation: string): Promise<{ id: string } | void> => {
     try {
       const token = authState?.token;
