@@ -28,20 +28,28 @@ export const ChangePassword = () => {
 
   const token = authState?.token;
 
-  const fetchUser = async () => {
+  const myUser = async () => {
     try {
-      const res = await Axios.get(`/user`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setEmail(res.data.user.email);
-      setUserName(res.data.user.name);
-    } catch (err) {
-      console.warn("Erro ao buscar dados:", err);
-    }
-  };
+      const token = authState?.token
+      
+      const result = await Axios.get(`/user`,{
+        headers:{
+          Authorization:`Bearer ${token}`
+        }
+      })
+      console.log(result.data);
+      
+      const username = result.data.user.name;
+      const email = result.data.user.email;
+
+      setEmail(email)
+      setUserName(username)
+    } catch (e: any) {
+      console.warn("Erro ao buscar usuário:", e?.response?.data?.msg || e.message);
+  };}
 
   useEffect(() => {
-    if (authState?.authenticated) fetchUser();
+    if (authState?.authenticated) myUser();
   }, [authState]);
 
   const handleChangePassword = async () => {
@@ -58,7 +66,7 @@ export const ChangePassword = () => {
         {
           email: email,
           name: userName,
-          password: newPassword, // nova senha aqui!
+          password: newPassword,
           role: 'User',
         },
         {
@@ -80,6 +88,7 @@ export const ChangePassword = () => {
         Alert.alert('Erro', 'Falha ao alterar a senha.');
       }
       console.error(err);
+      console.log(email)
     }
   };
 

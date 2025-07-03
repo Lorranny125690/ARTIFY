@@ -1,167 +1,184 @@
-import { View, Text, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from "react-native";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState } from "react";
 import { ArrowLeft } from "lucide-react-native";
 import tw from "twrnc";
 import { RootStackParamList } from "../../types/rootStackParamList";
-import { useRoute, RouteProp } from "@react-navigation/native";
 import Axios from "../../scripts/axios";
 
 export const VerificationScreen = () => {
-    const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-    const route = useRoute<RouteProp<RootStackParamList, 'Recuperação'>>();
-    const email = route.params?.email;
-  
-    const [code, setCode] = useState(new Array(5).fill(''));
-    const inputsRef = useRef<Array<TextInput | null>>([]);
-  
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [message, setMessage] = useState('');
-  
-    const isCodeComplete = code.every((digit) => digit !== '');
-  
-    const handleChange = (text: string, index: number) => {
-      if (text.length > 1) return;
-      if (text && !/^\d$/.test(text)) return;
-    
-      const newCode = [...code];
-      newCode[index] = text;
-      setCode(newCode);
-    
-      if (text && index < 9) {
-        inputsRef.current[index + 1]?.focus();
-      }
-    };    
-  
-    const handleBackspace = (text: string, index: number) => {
-      if (!text && index > 0) inputsRef.current[index - 1]?.focus();
-    };
-  
-    const handleSubmit = async () => {
-      const fullCode = code.join('');
-      if (fullCode.length < 4) return;
-    
-      setIsSubmitting(true);
-      setMessage('');
-    
-      try {
-        const response = await Axios.put("/auth", {
-        passport: fullCode,
-        newPassword: "123457"
-      }, {
-        headers: {
-          "Content-Type": "application/json"
-        }
-      });
-  
-      if (response.status === 200) {
-        console.log("Sucesso", response.data);
-      } else {
-        console.log("Erro:", response.status, response.data);
-      }
-    } catch (error) {
-      console.error("Erro de rede ou servidor:", error);
-    }}
-  
-    const handleResend = () => {
-      setMessage('');
-      setIsSubmitting(true);
-  
-      setTimeout(() => {
-        setIsSubmitting(false);
-        setMessage('📩 Novo código enviado para seu e-mail!');
-      }, 1000);
-    };
-  
-    return (
-      <KeyboardAvoidingView
-        style={tw`flex-1 bg-slate-900`}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <ScrollView
-          contentContainerStyle={tw`flex-grow items-center justify-center px-6 pb-10`}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Botão Voltar */}
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={tw`absolute top-12 left-4 z-50`}
-          >
-            <ArrowLeft color="white" size={28} />
-          </TouchableOpacity>
-  
-          {/* Imagem de topo */}
-          <Image
-            source={require("../../assets/iconArtify.png")}
-            style={tw`w-80 h-80`} 
-            resizeMode="contain"
-          />
-  
-          {/* Texto principal */}
-          <Text style={tw`text-white text-lg text-center font-semibold mb-10`}>
-            Acabamos de enviar um código{'\n'}para seu e-mail
-          </Text>
-  
-          <Text style={tw`text-slate-400 text-center mt-2`}>
-            Insira no campo abaixo o código de verificação de 5 dígitos enviado para o seu e-mail.
-          </Text>
-  
-          {/* Campos de verificação */}
-          <View style={tw`flex-row justify-between mt-6 w-full px-4`}>
-            {code.map((digit, index) => (
-              <TextInput
-                key={index}
-                ref={(ref) => {inputsRef.current[index] = ref}}
-                style={tw`bg-slate-800 text-white text-2xl w-14 h-14 text-center rounded`}
-                keyboardType="numeric"
-                maxLength={1}
-                value={digit}
-                onChangeText={(text) => handleChange(text, index)}
-                onKeyPress={({ nativeEvent }) => {
-                  if (nativeEvent.key === 'Backspace') {
-                    handleBackspace(code[index], index);
-                  }
-                }}
-              />
-            ))}
-          </View>
-  
-          {/* Botão de Enviar */}
-          <TouchableOpacity
-            onPress={handleSubmit}
-            disabled={!isCodeComplete || isSubmitting}
-            style={tw.style(
-              `mt-8 px-20 py-2 rounded`,
-              isCodeComplete ? `bg-slate-800` : `bg-slate-700 opacity-50`
-            )}
-          >
-            <Text style={tw`text-white text-lg font-semibold`}>
-              {isSubmitting ? 'Enviando...' : 'Enviar'}
-            </Text>
-          </TouchableOpacity>
-  
-          {/* Reenviar código */}
-          <TouchableOpacity
-            onPress={handleResend}
-            disabled={isSubmitting}
-            style={tw`mt-4`}
-          >
-            <Text style={tw`text-sky-400`}>
-              {isSubmitting ? 'Reenviando...' : 'Reenviar código'}
-            </Text>
-          </TouchableOpacity>
-  
-          {/* Mensagem de retorno */}
-          {message !== '' && (
-            <Text style={tw`text-white text-center mt-4`}>{message}</Text>
-          )}
-  
-          <Text style={tw`text-gray-400 text-sm mt-2 text-center`}>
-            Caso não encontre o e-mail na sua caixa de{'\n'}entrada, verifique na pasta de Spam!
-          </Text>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    );
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const route = useRoute<RouteProp<RootStackParamList, "Recuperação">>();
+  const email = route.params?.email;
+
+  const [code, setCode] = useState(new Array(5).fill(""));
+  const inputsRef = useRef<Array<TextInput | null>>([]);
+  const [newPassword, setNewPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const isCodeComplete = code.every((digit) => digit !== "");
+  const isPasswordValid = newPassword.length >= 6;
+
+  const handleChange = (text: string, index: number) => {
+    if (text.length > 1) return;
+    if (text && !/^\d$/.test(text)) return;
+
+    const newCode = [...code];
+    newCode[index] = text;
+    setCode(newCode);
+
+    if (text && index < code.length - 1) {
+      inputsRef.current[index + 1]?.focus();
+    }
   };
-  
+
+  const handleBackspace = (text: string, index: number) => {
+    if (!text && index > 0) inputsRef.current[index - 1]?.focus();
+  };
+
+  const handleSubmit = async () => {
+    const fullCode = code.join("");
+    if (!isCodeComplete || !isPasswordValid || !email) return;
+
+    setIsSubmitting(true);
+    setMessage("");
+
+    try {
+      const response = await Axios.put(
+        "/auth",
+        {
+          passport: fullCode,
+          refString: email,
+          newPassword: newPassword,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        setMessage("✅ Senha redefinida com sucesso!");
+        setTimeout(() => {
+          navigation.navigate("Login");
+        }, 2000);
+      } else {
+        setMessage("❌ Erro ao redefinir senha.");
+      }
+    } catch (error: any) {
+      console.error("Erro ao redefinir senha:", error);
+      setMessage("❌ Código inválido ou erro interno.");
+      console.log("Erro do servidor:", error.response?.data);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <KeyboardAvoidingView
+      style={tw`flex-1 bg-slate-900`}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <ScrollView
+        contentContainerStyle={tw`flex-grow items-center justify-center px-6 pb-10`}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Voltar */}
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={tw`absolute top-12 left-4 z-50`}
+        >
+          <ArrowLeft color="white" size={28} />
+        </TouchableOpacity>
+
+        {/* Logo */}
+        <Image
+          source={require("../../assets/iconArtify.png")}
+          style={tw`w-80 h-80`}
+          resizeMode="contain"
+        />
+
+        <Text style={tw`text-white text-lg text-center font-semibold mb-4`}>
+          Código de Verificação
+        </Text>
+
+        <Text style={tw`text-slate-400 text-center mb-4`}>
+          Digite o código de 5 dígitos enviado para seu e-mail e escolha sua nova senha.
+        </Text>
+
+        {/* Campo Código */}
+        <View style={tw`flex-row justify-between mt-2 w-full px-4`}>
+          {code.map((digit, index) => (
+            <TextInput
+              key={index}
+              ref={(ref) => {
+                inputsRef.current[index] = ref;
+              }}
+              style={tw`bg-slate-800 text-white text-2xl w-14 h-14 text-center rounded`}
+              keyboardType="numeric"
+              maxLength={1}
+              value={digit}
+              onChangeText={(text) => handleChange(text, index)}
+              onKeyPress={({ nativeEvent }) => {
+                if (nativeEvent.key === "Backspace") {
+                  handleBackspace(code[index], index);
+                }
+              }}
+            />
+          ))}
+        </View>
+
+        {/* Campo Nova Senha */}
+        <View style={tw`w-full max-w-[300px] mt-6`}>
+          <Text style={tw`text-white mb-2`}>Nova Senha</Text>
+          <TextInput
+            placeholder="Digite sua nova senha"
+            placeholderTextColor="#94A3B8"
+            secureTextEntry
+            style={tw`bg-slate-800 text-white rounded px-4 py-3`}
+            value={newPassword}
+            onChangeText={setNewPassword}
+          />
+          {!isPasswordValid && newPassword !== "" && (
+            <Text style={tw`text-red-400 text-xs mt-1`}>
+              A senha precisa de pelo menos 6 caracteres
+            </Text>
+          )}
+        </View>
+
+        {/* Botão Enviar */}
+        <TouchableOpacity
+          onPress={handleSubmit}
+          disabled={!isCodeComplete || !isPasswordValid || isSubmitting}
+          style={tw.style(
+            `mt-8 px-20 py-3 rounded-xl`,
+            isCodeComplete && isPasswordValid
+              ? `bg-slate-800`
+              : `bg-slate-700 opacity-50`
+          )}
+        >
+          <Text style={tw`text-white text-lg font-semibold`}>
+            {isSubmitting ? "Redefinindo..." : "Redefinir Senha"}
+          </Text>
+        </TouchableOpacity>
+
+        {/* Mensagem */}
+        {message !== "" && (
+          <Text style={tw`text-white text-center mt-6`}>{message}</Text>
+        )}
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+};

@@ -14,6 +14,7 @@ import { ImagesProvider } from "../contexts/ImageContext/imageContext";
 import { ChangePassword } from "../screens/user/Change";
 import { UserName } from "../screens/user/UserName"
 import { AccountOptions } from "../screens/user/Choice";
+import { ResetPasswordScreen } from "../screens/auth/PasswordScreen";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -49,6 +50,7 @@ export function RootNavigator() {
           <Stack.Screen name="Password" component={ChangePassword}/>
           <Stack.Screen name="UserName" component={UserName}/>
           <Stack.Screen name="Choice" component={AccountOptions}/>
+          <Stack.Screen name="ResetPassword" component={ResetPasswordScreen}/>
         </>
       ) : (
         <Stack.Screen name="Auth" component={AuthStack} />

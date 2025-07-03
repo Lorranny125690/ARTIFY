@@ -13,5 +13,7 @@ export type RootStackParamList = {
   Historico: undefined;
   Password: undefined;
   UserName: undefined;
-  Choice: undefined
+  Choice: undefined;
+  ResetPassword: { email: string,
+    code: number };
 };
