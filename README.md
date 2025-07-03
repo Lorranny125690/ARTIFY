@@ -1,4 +1,4 @@
-<h1>Vá no branch "test"</h1>
+<h1>Vá no branch "Dev"</h1>
 
 <p>Editor/conversor de fotos</p>
 <p><strong>Exemplo:</strong> Este é um projeto <em>Node.js / React / etc.</p>
@@ -25,4 +25,9 @@ cd seu-projeto
 <pre>
 <code>npm i --force
 </code>
+
+  <pre>
+    <code>https://drive.google.com/drive/folders/1rHHPzR39dciiJSeJKeDabns0Su7AGU2b</code>
+    <code>Link do apk</code>
+  </pre>
 </pre>
