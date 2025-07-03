@@ -1,28 +1,91 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
   ScrollView,
+  Alert,
 } from 'react-native';
 import tw from 'twrnc';
 import * as Animatable from 'react-native-animatable';
 import { ArrowLeft } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
-import { StackNavigatorProps, type StackNavigationProp } from '@react-navigation/stack';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../types/rootStackParamList';
+import Axios from '../../scripts/axios';
+import { useAuth } from '../../contexts/AuthContext/authenticatedUser';
 
 export const ChangePassword = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  
+  const { authState } = useAuth();
+
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [email, setEmail] = useState('');
+  const [userName, setUserName] = useState('');
+
+  const token = authState?.token;
+
+  const fetchUser = async () => {
+    try {
+      const res = await Axios.get(`/user`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setEmail(res.data.user.email);
+      setUserName(res.data.user.name);
+    } catch (err) {
+      console.warn("Erro ao buscar dados:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (authState?.authenticated) fetchUser();
+  }, [authState]);
+
+  const handleChangePassword = async () => {
+    if (currentPassword.length < 6) {
+      return Alert.alert('Erro', 'A senha atual deve ter pelo menos 6 caracteres.');
+    }
+    if (newPassword !== confirmPassword) {
+      return Alert.alert('Erro', 'As senhas novas não coincidem.');
+    }
+
+    try {
+      const res = await Axios.put(
+        '/user',
+        {
+          email: email,
+          name: userName,
+          password: newPassword, // nova senha aqui!
+          role: 'User',
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (res.status === 200) {
+        Alert.alert('Sucesso', 'Senha alterada com sucesso!');
+        navigation.goBack();
+      }
+    } catch (err: any) {
+      if (err.response?.status === 404) {
+        Alert.alert('Erro', 'Usuário não encontrado.');
+      } else {
+        Alert.alert('Erro', 'Falha ao alterar a senha.');
+      }
+      console.error(err);
+    }
+  };
+
   return (
     <ScrollView contentContainerStyle={tw`flex-1 bg-[#0F172A] p-5`}>
-      <Animatable.View
-        animation="fadeInUp"
-        duration={600}
-        style={tw`mt-10`}
-      >
+      <Animatable.View animation="fadeInUp" duration={600} style={tw`mt-10`}>
         {/* Voltar */}
         <TouchableOpacity onPress={() => navigation.goBack()} style={tw`flex-row items-center mb-6`}>
           <ArrowLeft color="white" size={24} />
@@ -34,27 +97,31 @@ export const ChangePassword = () => {
         {/* Usuário */}
         <View style={tw`flex-row items-center mb-8`}>
           <View style={tw`w-12 h-12 rounded-full bg-white/10 items-center justify-center`}>
-            <Text style={tw`text-white text-lg`}>T</Text>
+            <Text style={tw`text-white text-lg`}>{userName?.[0] || 'U'}</Text>
           </View>
           <View style={tw`ml-3`}>
-            <Text style={tw`text-white text-base font-bold`}>Thierrir Alencar</Text>
+            <Text style={tw`text-white text-base font-bold`}>{userName}</Text>
             <Text style={tw`text-gray-400 text-sm`}>Usuário ativo</Text>
           </View>
         </View>
 
         {/* Campos */}
-        <View style={tw`mb-6`}>
+        <View style={tw`mb-2`}>
           <Text style={tw`text-white mb-2`}>Senha Atual</Text>
           <TextInput
             placeholder="Digite sua senha atual"
             placeholderTextColor="#94A3B8"
             secureTextEntry
             style={tw`bg-white/5 text-white rounded px-4 py-3`}
+            value={currentPassword}
+            onChangeText={setCurrentPassword}
           />
-          <Text style={tw`text-xs text-gray-400 mt-1`}>
-            A senha deve ter pelo menos 6 caracteres.
-          </Text>
         </View>
+
+      {/* Link para Esqueceu a senha */}
+        <TouchableOpacity onPress={() => navigation.navigate('Email')} style={tw`mb-6`}>
+          <Text style={tw`text-blue-400 text-sm text-right`}>Esqueceu a senha?</Text>
+        </TouchableOpacity>
 
         <View style={tw`mb-6`}>
           <Text style={tw`text-white mb-2`}>Nova Senha</Text>
@@ -63,10 +130,9 @@ export const ChangePassword = () => {
             placeholderTextColor="#94A3B8"
             secureTextEntry
             style={tw`bg-white/5 text-white rounded px-4 py-3`}
+            value={newPassword}
+            onChangeText={setNewPassword}
           />
-          <Text style={tw`text-xs text-gray-400 mt-1`}>
-            A nova senha deve conter letras e números.
-          </Text>
         </View>
 
         <View style={tw`mb-10`}>
@@ -76,20 +142,20 @@ export const ChangePassword = () => {
             placeholderTextColor="#94A3B8"
             secureTextEntry
             style={tw`bg-white/5 text-white rounded px-4 py-3`}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
           />
-          <Text style={tw`text-xs text-gray-400 mt-1`}>
-            As senhas devem coincidir.
-          </Text>
         </View>
 
         {/* Botões */}
         <View style={tw`flex-row justify-between`}>
-          <TouchableOpacity style={tw`flex-1 mr-2 bg-white rounded-xl py-3`}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={tw`flex-1 mr-2 bg-white rounded-xl py-3`}>
             <Text style={tw`text-center text-[#0F172A] font-semibold`}>
               Cancelar
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={tw`flex-1 ml-2 bg-gray-700 rounded-xl py-3`}>
+
+          <TouchableOpacity onPress={handleChangePassword} style={tw`flex-1 ml-2 bg-gray-700 rounded-xl py-3`}>
             <Text style={tw`text-center text-white font-semibold`}>
               Salvar alterações
             </Text>
