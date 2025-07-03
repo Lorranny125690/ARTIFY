@@ -45,6 +45,7 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [images, setImages] = useState<ImageType[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
+  const [value, setValue] = useState<number | string>();
   const { authState } = useAuth();
   
   const fetchImages = async () => {
@@ -88,6 +89,40 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       fetchImages();
     }
   }, [authState?.authenticated]);
+
+  const GenerateImage = async(input:string)=>{
+    try{
+      const token = authState?.token;
+      if (!token) {
+        Alert.alert("Erro", "Token de autenticação ausente.");
+        return;
+      }
+      console.log("Enviando input para Geração de IA:", input);
+
+      const response = await Axios.post(`/processes/defined/gen_by_ai`,{
+        prompt:input,
+        
+      },{
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        
+      })
+
+      console.log("Resposta do genAI:", response.data);
+  
+      const processedUrl = response.data?.image;
+      console.log(processedUrl)
+  
+      await fetchImages();
+  
+      return { id: processedUrl };
+
+   } catch (error: any) {
+      console.error("Erro ao aplicar genAI:", error?.response?.data || error.message);
+      Alert.alert("Erro", "Não foi possível aplicar geração de imagem (genAI).");
+    }
+  }
 
   const applyFilter = async (endpoint: string, image: ImageType): Promise<{ id: string } | void> => {
     try {
@@ -530,7 +565,7 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     // 🔄 Transformações
     "Resize": (img) => Rescale(img, 2),
     "Rotação": (img) => Rotate(img, 60),
-    "Translação (warpAffine)": (img) => Translate(img, 30, 30),
+    "Translação (warpAffine)": (img) => Translate(img, Number(value), Number(value)),
     "Escala (Cardinal)": (img) => Cardinal(img, 10, 10),
     "Flip X": Flip,
     "Cropping": (img) => Crop(img, 5, 5, 2, 2),
@@ -539,6 +574,8 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     "Pixelização facial": (img) => Face(img, "censor"),
     // "Remover Background em Vídeo": removeVideoBackground,
     "Detecção de Rostos com IA": (img) => Face(img, "isolate"),
+
+    "Gerar imagem com IA": (img) => GenerateImage(String(value))
   };   
 
   const uploadImage = async (imageUris: string[], filterName: string): Promise<{ Ids: string[] } | void> => {
