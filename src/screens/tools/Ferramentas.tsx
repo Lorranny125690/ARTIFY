@@ -18,13 +18,8 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../../types/rootStackParamList";
 import { openCamera } from "./functions/OpenCamera";
 import { openGallery } from "./functions/OpenGallery";
-import { RecentProcessedImages } from "./functions/recentProcess";
-import { Images } from "../../types/entitys/images";
-import { Camera } from "lucide-react-native";
 import { API_URL, useAuth } from "../../contexts/AuthContext/authenticatedUser";
-import Axios from "../../scripts/axios";
 import { useImagesContext } from "../../contexts/ImageContext/imageContext";
-import icon2 from "react-native-vector-icons/AntDesign"
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 

@@ -95,7 +95,7 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       if (!token) throw new Error("Token de autenticação ausente.");
   
       const response = await Axios.post(
-        `processes/defined/${endpoint}`,
+        `/processes/defined/${endpoint}`,
         { image_id: image.id },
         {
           headers: {
