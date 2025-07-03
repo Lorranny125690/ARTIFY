@@ -48,7 +48,6 @@ const toolSections: { title: string; data: Item[] }[] = [
     title: "Modificação de imagem",
     data: [
       { name: "Remove Background", icon: "scissors" },
-      { name: "Converter Documento", icon: "file" },
       { name: "Pixelização Total", icon: "th" },
       { name: "Comprimir Imagens", icon: "expand" },
     ],
@@ -70,8 +69,6 @@ const transformacoesSection: { title: string; data: Item[] } = {
 const detecaoRealceSection: { title: string; data: Item[] } = {
   title: "Detecção e Realce",
   data: [
-    { name: "Color Enhancer", icon: "magic" },
-    { name: "Chromatic Aberration", icon: "eye" },
     { name: "Blur", icon: "eye-slash" },
     { name: "Pixelização facial", icon: "th-large" },
     { name: "Detecção de Rostos com IA", icon: "user-circle" },

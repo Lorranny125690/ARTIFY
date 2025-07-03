@@ -561,6 +561,7 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     "Remove Background": Background,
     "Pixelização Total": Pixelate,
     "Blur": (img) => Blur(img, 7),
+    "Comprimir Imagens": (img) => Rescale(img, 0.5),
   
     // 🔄 Transformações
     "Resize": (img) => Rescale(img, 2),
