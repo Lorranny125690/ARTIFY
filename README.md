@@ -20,14 +20,14 @@ cd seu-projeto
 </code>
 </pre>
 
+<pre>
+    <code>https://drive.google.com/drive/folders/1rHHPzR39dciiJSeJKeDabns0Su7AGU2b</code>
+    <code>Link do apk</code>
+</pre>
+
 <p><strong>Caso ocorra algum erro, você pode forçar a instalação com:</strong></p>
 
 <pre>
 <code>npm i --force
 </code>
-
-  <pre>
-    <code>https://drive.google.com/drive/folders/1rHHPzR39dciiJSeJKeDabns0Su7AGU2b</code>
-    <code>Link do apk</code>
-  </pre>
 </pre>
