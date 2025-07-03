@@ -36,6 +36,7 @@ interface ImagesContextProps {
   Rotate: (img: ImageType, amount: number, amount1: number) => Promise<{ id: string } | void>;
   Cardinal: (img: ImageType, amount: number, amount1: number) => Promise<{ id: string } | void>;
   Crop: (img: ImageType, amount: number, amount1: number, amout3: number, amount4: number) => Promise<{ id: string } | void>;
+  GenerateImage:(input:string)=> Promise<{id:string} | void>;
   Background: (image: ImageType) => Promise<{ id: string } | void>;
 }
 
@@ -45,7 +46,6 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [images, setImages] = useState<ImageType[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
-  const [value, setValue] = useState<number | string>();
   const { authState } = useAuth();
   
   const fetchImages = async () => {
@@ -565,7 +565,7 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     // 🔄 Transformações
     "Resize": (img) => Rescale(img, 2),
     "Rotação": (img) => Rotate(img, 60),
-    "Translação (warpAffine)": (img) => Translate(img, Number(value), Number(value)),
+    "Translação (warpAffine)": (img) => Translate(img, 30, 30),
     "Escala (Cardinal)": (img) => Cardinal(img, 10, 10),
     "Flip X": Flip,
     "Cropping": (img) => Crop(img, 5, 5, 2, 2),
@@ -574,8 +574,6 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     "Pixelização facial": (img) => Face(img, "censor"),
     // "Remover Background em Vídeo": removeVideoBackground,
     "Detecção de Rostos com IA": (img) => Face(img, "isolate"),
-
-    "Gerar imagem com IA": (img) => GenerateImage(String(value))
   };   
 
   const uploadImage = async (imageUris: string[], filterName: string): Promise<{ Ids: string[] } | void> => {
@@ -714,7 +712,8 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         Rotate,
         Cardinal,
         Crop,
-        Background
+        Background,
+        GenerateImage
       }}
     >
       {children}

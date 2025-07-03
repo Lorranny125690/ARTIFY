@@ -9,6 +9,7 @@ import {
   Modal,
   ActivityIndicator,
   Alert,
+  TextInput,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { DrawerNavigationProp } from "@react-navigation/drawer";
@@ -82,14 +83,19 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
   const { authState } = useAuth();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const token = authState?.token;
-  const { uploadImage, images, selectedFilter, setSelectedFilter, getProcessamentoPorId } = useImagesContext();
-
+  const { uploadImage, images, selectedFilter, setSelectedFilter, GenerateImage } = useImagesContext();
+  const [inputModalVisible,setInputModalVisible] = useState<boolean>(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
   const [selectedTool, setSelectedTool] = useState<Item>();
   const [toolSelectionActive, setToolSelectionActive] = useState(false);
   const [imageUris, setImageUris] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [promptInput,setPromptInput] = useState<string>("")
+
+  const onAifunctionCalled = async ()=>{
+    GenerateImage(promptInput)
+}
 
   const onToolPress = (tool: Item) => {
     setSelectedTool(tool);
@@ -209,6 +215,41 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
                 <Text style={tw`text-white font-semibold mt-1`}>Galeria</Text>
               </TouchableOpacity>
             </View>
+
+            <TouchableOpacity onPress={handleCloseModal}>
+              <Text style={tw`text-center text-red-400 text-sm`}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      <Modal visible={inputModalVisible} transparent animationType="fade">
+        <TouchableOpacity
+          style={tw`flex-1 items-center justify-center bg-black bg-opacity-50`}
+          activeOpacity={1}
+          onPressOut={handleCloseModal}
+        >
+          <View style={tw`bg-slate-800 w-72 p-6 rounded-2xl shadow-lg`}>
+            <Text style={tw`text-white text-lg font-semibold text-center mb-4`}>
+              Imagine Uma imagem
+            </Text>
+
+            <TextInput
+              value={promptInput} // valor atual do input
+              onChangeText={(e) => setPromptInput(e)} // função chamada quando o texto mudar
+              placeholderTextColor="#94a3b8"
+              style={tw`bg-slate-700 text-white p-3 rounded-lg mb-4`}
+            />
+
+            <TouchableOpacity
+              onPress={() => {
+                onAifunctionCalled();
+                handleCloseModal();
+              }}
+              style={tw`bg-sky-500 py-3 rounded-lg items-center mb-3`}
+            >
+              <Text style={tw`text-white font-semibold`}>Confirmar</Text>
+            </TouchableOpacity>
 
             <TouchableOpacity onPress={handleCloseModal}>
               <Text style={tw`text-center text-red-400 text-sm`}>Cancelar</Text>
