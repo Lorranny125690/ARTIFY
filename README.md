@@ -30,3 +30,6 @@ cd seu-projeto
 
  <code>https://drive.google.com/drive/folders/1rHHPzR39dciiJSeJKeDabns0Su7AGU2b</code>
  <code>Link do apk</code>
+
+ <p>acorde a API</p>
+ <code>https://image-smith-1.onrender.com/docs</code>
