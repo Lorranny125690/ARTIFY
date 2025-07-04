@@ -27,12 +27,12 @@ export const UserName = () => {
   const token = authState?.token;
 
   useEffect(() => {
-    if (currentPassword.length >= 6 && currentPassword.trim().length > 0) {
+    if (newName.trim().length > 0) {
       setIsValid(true);
     } else {
       setIsValid(false);
     }
-  }, [currentPassword, newName]);  
+  }, [newName]);  
 
   const myUser = async () => {
     try {
@@ -65,12 +65,9 @@ export const UserName = () => {
     
     try {
       const response = await Axios.put(
-        '/user',
+        "/user",
         {
-          email: email,
           name: newName,
-          password: currentPassword,
-          role: 'User',
         },
         {
           headers: {
@@ -113,7 +110,7 @@ export const UserName = () => {
             <Text style={tw`text-white text-lg`}>T</Text>
           </View>
           <View style={tw`ml-3`}>
-            <Text style={tw`text-white text-base font-bold`}>{ userName || 'Usuário'}</Text>
+            <Text style={tw`text-white text-base font-bold`}>{ userName || 'Carregando...'}</Text>
             <Text style={tw`text-gray-400 text-sm`}>Usuário ativo</Text>
           </View>
         </View>
@@ -128,22 +125,6 @@ export const UserName = () => {
             value={newName}
             onChangeText={setNewName}
           />
-        </View>
-
-        {/* Senha atual */}
-        <View style={tw`mb-10`}>
-          <Text style={tw`text-white mb-2`}>Confirme sua senha</Text>
-          <TextInput
-            placeholder="Digite sua senha atual"
-            placeholderTextColor="#94A3B8"
-            secureTextEntry
-            style={tw`bg-white/5 text-white rounded px-4 py-3`}
-            value={currentPassword}
-            onChangeText={setCurrentPassword}
-          />
-          <Text style={tw`text-xs text-gray-400 mt-1`}>
-            A senha é necessária para confirmar a alteração.
-          </Text>
         </View>
 
         {/* Botões */}

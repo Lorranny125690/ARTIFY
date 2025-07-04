@@ -50,7 +50,6 @@ export function RootNavigator() {
           <Stack.Screen name="Password" component={ChangePassword}/>
           <Stack.Screen name="UserName" component={UserName}/>
           <Stack.Screen name="Choice" component={AccountOptions}/>
-          <Stack.Screen name="ResetPassword" component={ResetPasswordScreen}/>
         </>
       ) : (
         <Stack.Screen name="Auth" component={AuthStack} />

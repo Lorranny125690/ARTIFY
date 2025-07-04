@@ -122,7 +122,7 @@ export function UserProfile() {
           </View>
           <View>
             <Text style={tw`text-white text-base font-semibold`}>
-              {userName != undefined ? userName : "Cadastre-se"}
+              {userName != undefined ? userName : "Carregando..."}
             </Text>
             <Text style={tw`text-slate-400 text-sm`}>Usuário ativo</Text>
           </View>

@@ -107,7 +107,7 @@ export function ImageGallery() {
         <Text style={tw`text-white text-center mt-4`}>Nenhuma imagem encontrada.</Text>
       ) : (
         <ScrollView>
-          <View style={tw`left-2 flex-row flex-wrap items-center px-2 gap-5`}>
+          <View style={tw`flex-row flex-wrap justify-start items-center gap-5 px-4`}>
             {images.map((image, index: number) => (
               <TouchableOpacity key={image.id} onPress={() => openModal(index)}>
                 <Animatable.View animation="fadeInUp" duration={500} delay={index * 100}>

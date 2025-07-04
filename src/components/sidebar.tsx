@@ -45,7 +45,7 @@ export const Sidebar = (props: DrawerContentComponentProps) => {
       <TouchableOpacity onPress={() => navigation.navigate("Profile")} style={tw`flex-row items-center py-4 border-b border-gray-700`}>
         <Icon name="user-circle" size={40} color="white" />
         <Text style={tw`text-white text-lg font-bold ml-3`}>
-          {userName != undefined ? userName : "Cadastre-se"}
+          {userName != undefined ? userName : "Carregando..."}
         </Text>
       </TouchableOpacity>
 

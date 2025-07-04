@@ -8,7 +8,7 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
-import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import React, { useEffect, useRef, useState } from "react";
 import { ArrowLeft } from "lucide-react-native";
@@ -19,39 +19,18 @@ import { useAuth } from "../../contexts/AuthContext/authenticatedUser";
 
 export const VerificationScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const [email, setEmail] = useState('')
   const [code, setCode] = useState(new Array(5).fill(""));
   const inputsRef = useRef<Array<TextInput | null>>([]);
-  const [newPassword, setNewPassword] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [message, setMessage] = useState("");
   const isCodeComplete = code.every((digit) => digit !== "");
-  const isPasswordValid = newPassword.length >= 6;
   const { authState } = useAuth();
+  const route = useRoute();
+  const { email } = route.params as { email: string };
 
-  const myUser = async () => {
-    try {
-      const token = authState?.token
-      
-      const result = await Axios.get(`/user`,{
-        headers:{
-          Authorization:`Bearer ${token}`
-        }
-      })
-      console.log(result.data);
-      
-      const username = result.data.user.email;
-      setEmail(username)
-    } catch (e: any) {
-      console.warn("Erro ao buscar usuário:", e?.response?.data?.msg || e.message);
-    }
-  };
+  const token = authState?.token;
 
   useEffect(() => {
-    if (authState?.authenticated) {
-      myUser();
-    }
-  }, [authState, email]);
+    console.log("EMAIL FOI SETADO:", email);
+  }, [email]);  
 
   const handleChange = (text: string, index: number) => {
     if (text.length > 1) return;
@@ -70,45 +49,24 @@ export const VerificationScreen = () => {
     if (!text && index > 0) inputsRef.current[index - 1]?.focus();
   };
 
-  const handleSubmit = async () => {
+  const handleContinue = () => {
     const fullCode = code.join("");
-    if (!isCodeComplete || !isPasswordValid || !email) return;
-
-    setIsSubmitting(true);
-    setMessage("");
-
-    try {
-      const response = await Axios.put(
-        "/auth",
-        {
-          passport: fullCode,
-          refString: email,
-          newPassword: newPassword,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (response.status === 200) {
-        setMessage("✅ Senha redefinida com sucesso!");
-        setTimeout(() => {
-          navigation.navigate("Login");
-        }, 2000);
-      } else {
-        setMessage("❌ Erro ao redefinir senha.");
-      }
-    } catch (error: any) {
-      console.error("Erro ao redefinir senha:", error);
-      setMessage("❌ Código inválido ou erro interno.");
-      console.log("Erro do servidor:", error.response?.data);
-    } finally {
-      setIsSubmitting(false);
+    console.log("Navegando com:", email, fullCode);
+    console.log(email)
+  
+    if (!isCodeComplete || !email) {
+      console.log("Código incompleto ou email vazio");
+      return;
     }
-  };
-
+  
+    try {
+      navigation.navigate("ResetPassword", { email: email, code: fullCode });
+      ;
+    } catch (err) {
+      console.error("Erro na navegação:", err);
+    }
+  };   
+  
   return (
     <KeyboardAvoidingView
       style={tw`flex-1 bg-slate-900`}
@@ -138,7 +96,7 @@ export const VerificationScreen = () => {
         </Text>
 
         <Text style={tw`text-slate-400 text-center mb-4`}>
-          Digite o código de 5 dígitos enviado para seu e-mail e escolha sua nova senha.
+          Digite o código de 5 dígitos enviado para seu e-mail.
         </Text>
 
         {/* Campo Código */}
@@ -163,44 +121,21 @@ export const VerificationScreen = () => {
           ))}
         </View>
 
-        {/* Campo Nova Senha */}
-        <View style={tw`w-full max-w-[300px] mt-6`}>
-          <Text style={tw`text-white mb-2`}>Nova Senha</Text>
-          <TextInput
-            placeholder="Digite sua nova senha"
-            placeholderTextColor="#94A3B8"
-            secureTextEntry
-            style={tw`bg-slate-800 text-white rounded px-4 py-3`}
-            value={newPassword}
-            onChangeText={setNewPassword}
-          />
-          {!isPasswordValid && newPassword !== "" && (
-            <Text style={tw`text-red-400 text-xs mt-1`}>
-              A senha precisa de pelo menos 6 caracteres
-            </Text>
-          )}
-        </View>
-
-        {/* Botão Enviar */}
+        {/* Botão Continuar */}
         <TouchableOpacity
-          onPress={handleSubmit}
-          disabled={!isCodeComplete || !isPasswordValid || isSubmitting}
+          onPress={handleContinue}
+          disabled={!isCodeComplete}
           style={tw.style(
             `mt-8 px-20 py-3 rounded-xl`,
-            isCodeComplete && isPasswordValid
-              ? `bg-slate-800`
+            isCodeComplete
+              ? `bg-sky-600`
               : `bg-slate-700 opacity-50`
           )}
         >
           <Text style={tw`text-white text-lg font-semibold`}>
-            {isSubmitting ? "Redefinindo..." : "Redefinir Senha"}
+            Continuar
           </Text>
         </TouchableOpacity>
-
-        {/* Mensagem */}
-        {message !== "" && (
-          <Text style={tw`text-white text-center mt-6`}>{message}</Text>
-        )}
       </ScrollView>
     </KeyboardAvoidingView>
   );

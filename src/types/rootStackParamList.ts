@@ -2,7 +2,7 @@ export type RootStackParamList = {
   Welcome: undefined;
   Login: undefined;
   Signup: undefined;
-    Recuperação: {email: string }
+  Recuperação: {email: string }
   Home: undefined;
   Email: undefined;
   Auth: undefined,
@@ -15,5 +15,5 @@ export type RootStackParamList = {
   UserName: undefined;
   Choice: undefined;
   ResetPassword: { email: string,
-    code: number };
+    code: string };
 };

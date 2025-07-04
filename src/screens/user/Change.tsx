@@ -19,7 +19,6 @@ import { useAuth } from '../../contexts/AuthContext/authenticatedUser';
 export const ChangePassword = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const { authState } = useAuth();
-
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -64,10 +63,7 @@ export const ChangePassword = () => {
       const res = await Axios.put(
         '/user',
         {
-          email: email,
-          name: userName,
           password: newPassword,
-          role: 'User',
         },
         {
           headers: {
@@ -113,24 +109,6 @@ export const ChangePassword = () => {
             <Text style={tw`text-gray-400 text-sm`}>Usuário ativo</Text>
           </View>
         </View>
-
-        {/* Campos */}
-        <View style={tw`mb-2`}>
-          <Text style={tw`text-white mb-2`}>Senha Atual</Text>
-          <TextInput
-            placeholder="Digite sua senha atual"
-            placeholderTextColor="#94A3B8"
-            secureTextEntry
-            style={tw`bg-white/5 text-white rounded px-4 py-3`}
-            value={currentPassword}
-            onChangeText={setCurrentPassword}
-          />
-        </View>
-
-      {/* Link para Esqueceu a senha */}
-        <TouchableOpacity onPress={() => navigation.navigate('Email')} style={tw`mb-6`}>
-          <Text style={tw`text-blue-400 text-sm text-right`}>Esqueceu a senha?</Text>
-        </TouchableOpacity>
 
         <View style={tw`mb-6`}>
           <Text style={tw`text-white mb-2`}>Nova Senha</Text>
