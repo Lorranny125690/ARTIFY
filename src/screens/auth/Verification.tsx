@@ -10,25 +10,48 @@ import {
 } from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ArrowLeft } from "lucide-react-native";
 import tw from "twrnc";
 import { RootStackParamList } from "../../types/rootStackParamList";
 import Axios from "../../scripts/axios";
+import { useAuth } from "../../contexts/AuthContext/authenticatedUser";
 
 export const VerificationScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const route = useRoute<RouteProp<RootStackParamList, "Recuperação">>();
-  const email = route.params?.email;
-
+  const [email, setEmail] = useState('')
   const [code, setCode] = useState(new Array(5).fill(""));
   const inputsRef = useRef<Array<TextInput | null>>([]);
   const [newPassword, setNewPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
-
   const isCodeComplete = code.every((digit) => digit !== "");
   const isPasswordValid = newPassword.length >= 6;
+  const { authState } = useAuth();
+
+  const myUser = async () => {
+    try {
+      const token = authState?.token
+      
+      const result = await Axios.get(`/user`,{
+        headers:{
+          Authorization:`Bearer ${token}`
+        }
+      })
+      console.log(result.data);
+      
+      const username = result.data.user.email;
+      setEmail(username)
+    } catch (e: any) {
+      console.warn("Erro ao buscar usuário:", e?.response?.data?.msg || e.message);
+    }
+  };
+
+  useEffect(() => {
+    if (authState?.authenticated) {
+      myUser();
+    }
+  }, [authState, email]);
 
   const handleChange = (text: string, index: number) => {
     if (text.length > 1) return;

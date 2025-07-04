@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Modal,
+  ActivityIndicator,
   Alert,
   TextInput,
 } from "react-native";
@@ -75,11 +76,17 @@ const detecaoRealceSection: { title: string; data: Item[] } = {
   ],
 };
 
+const GenerativeAiSection: { title: string; data: Item[] } = {
+  title: "Inteligência Artificial",
+  data: [
+    { name: "Gerar Imagens", icon: "magic" },
+  ],
+};
 const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => {
   const { authState } = useAuth();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const token = authState?.token;
-  const { uploadImage, images, selectedFilter, setSelectedFilter, GenerateImage } = useImagesContext();
+  const { uploadImage, images, selectedFilter, setSelectedFilter ,GenerateImage} = useImagesContext();
   const [inputModalVisible,setInputModalVisible] = useState<boolean>(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
@@ -89,20 +96,30 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
   const [loading, setLoading] = useState(false);
   const [promptInput,setPromptInput] = useState<string>("")
 
-  const onAifunctionCalled = async ()=>{
-    GenerateImage(promptInput)
-}
-
   const onToolPress = (tool: Item) => {
-    setSelectedTool(tool);
-    setSelectedFilter(tool.name);
-    setModalVisible(true);
-    setToolSelectionActive(true)
+    console.log(tool)
+    if(tool.name!="Gerar Imagens"){
+      setSelectedTool(tool);
+      setSelectedFilter(tool.name);
+      setModalVisible(true);
+      setToolSelectionActive(true)
+    }else{
+      setSelectedTool(tool);
+      setSelectedFilter(tool.name);
+      setModalVisible(false);
+      setInputModalVisible(true);
+      setToolSelectionActive(true)
+    }
   };
+
+  const onAifunctionCalled = async ()=>{
+      GenerateImage(promptInput)
+  }
 
   const handleCloseModal = () => {
     setModalVisible(false);
     setToolSelectionActive(false)
+    setInputModalVisible(false)
   };
 
   const handleCloseConfirmModal = () => {
@@ -146,6 +163,10 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
     }
   };  
 
+  function onSubmitImageUrl(imageUrl: any) {
+    throw new Error("Function not implemented.");
+  }
+
   return (
     <View style={tw`mt-6 px-4 mb-15`}>
       <Text style={tw`text-white text-lg font-semibold mb-2`}>
@@ -160,6 +181,7 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
           <TouchableOpacity
             onPress={() => onToolPress(item)}
             style={tw.style(
+              title === "Inteligencia Artificial" ? "w-95 bg-slate-700 h-30 p-4":
               title === "Modificação de imagem"
                 ? "bg-slate-700 w-40 h-30 p-4"
                 : "bg-slate-700 w-28 h-28 p-3",
@@ -167,10 +189,15 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
               toolSelectionActive && selectedTool?.name === item.name && "border-2 border-cyan-400"
             )}
           >
-            <Icon name={item.icon} size={title === "Modificação de imagem" ? 28 : 24} color="#fff" />
+            <Icon name={item.icon} size={title === "Modificação de imagem" ? 28 : 24} color="#fff" 
+                style={tw.style(
+                  
+                )}
+            />
             <Text
               style={tw.style(
-                title === "Modificação de imagem" ? "text-white text-sm mt-3 text-center" : "text-white text-xs mt-2 text-center"
+                title === "Modificação de imagem" ? "text-white text-sm mt-3 text-center" : "text-white text-xs mt-2 text-center",
+               
               )}
             >
               {item.name}
@@ -218,6 +245,8 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
           </View>
         </TouchableOpacity>
       </Modal>
+
+      {/* Modal para input em funções de IA*/ }
 
       <Modal visible={inputModalVisible} transparent animationType="fade">
         <TouchableOpacity
@@ -278,9 +307,18 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
                 style={tw`flex-1 bg-sky-600 px-4 py-3 rounded-lg ml-2`}
                 disabled={loading}
               >
-                <Text style={tw`text-white text-center font-semibold`}>
-                  {loading ? "Enviando..." : "Confirmar"}
-                </Text>
+<View style={tw`flex-row justify-center items-center`}>
+  {loading && (
+    <ActivityIndicator
+      size="small"
+      color="#ffffff"
+      style={tw`mr-2`}
+    />
+  )}
+  <Text style={tw`text-white text-center font-semibold`}>
+    {loading ? "Enviando..." : "Confirmar"}
+  </Text>
+</View>
               </TouchableOpacity>
             </View>
           </View>
@@ -290,9 +328,20 @@ const Section: React.FC<{ title: string; data: Item[] }> = ({ title, data }) => 
   );
 };
 
+type ImageType = {
+  type: number;
+  id: string;
+  uri: string;
+  filename: string;
+  nome: string;
+  dataFormatada: string;
+  favorite: boolean;
+};
+
 export const Ferramentas: React.FC = () => {
   const navigation = useNavigation<DrawerNavigationProp<any>>();
   const { authState } = useAuth();
+  const [recentEdits, setRecentEdits] = useState<ImageType[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const token = authState?.token;
 
@@ -310,7 +359,7 @@ export const Ferramentas: React.FC = () => {
       {[...toolSections, detecaoRealceSection, transformacoesSection].map((section) => (
         <Section key={section.title} title={section.title} data={section.data} />
       ))}
-      
+      <Section key={"Inteligencia Artificial"} title="Inteligencia Artificial" data={[{ name: "Gerar Imagens", icon: "eye"}]}></Section>
 
       {/* Rodapé com redes sociais */}
       <View style={tw`bottom-0 top-10 py-6 bg-slate-800 items-center`}>
