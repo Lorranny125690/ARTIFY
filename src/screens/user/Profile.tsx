@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
 import tw from "twrnc";
 import Icon from "react-native-vector-icons/FontAwesome";
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import type { StackNavigationProp } from "@react-navigation/stack";
 import { CircleUserRound } from "lucide-react-native";
 import type { RootStackParamList } from "../../types/rootStackParamList";
@@ -89,12 +89,14 @@ export function UserProfile() {
     }
   };
 
-  useEffect(() => {
-    if (authState?.authenticated) {
-      myUser();
-      fetchImages();
-    }
-  }, [authState]);  
+  useFocusEffect(
+    useCallback(() => {
+      if (authState?.authenticated) {
+        myUser();
+        fetchImages();
+      }
+    }, [authState])
+  );
 
   return (
     <SafeAreaView style={tw`flex-1 bg-slate-900`}>

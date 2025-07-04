@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { DrawerNavigationProp } from "@react-navigation/drawer";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import tw from "twrnc";
 import { API_URL, useAuth } from "../contexts/AuthContext/authenticatedUser";
@@ -155,11 +155,13 @@ export const HomeScreen: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    if (authState?.authenticated) {
-      history();
-    }
-  }, [authState?.authenticated]);
+  useFocusEffect(
+    useCallback(() => {
+      if (authState?.authenticated) {
+        history();
+      }
+    }, [authState])
+  );
 
 return (
   <View style={tw`flex-1 bg-slate-900`}>

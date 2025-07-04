@@ -8,6 +8,7 @@ export type ImageType = {
   id: string;
   uri: string;
   filename: string;
+  nome: string;
   dataFormatada: string;
   favorite: boolean;
 };
@@ -72,6 +73,7 @@ export const ImagesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           filename: `${agora.getFullYear()}-${agora.getMonth()+1}-${agora.getDate()}_${agora.getHours()}-${agora.getMinutes()}-${agora.getSeconds()}`,        
           dataFormatada,
           favorite: img.favorite ?? false,
+          nome: img.filename,
           type: img.type
         };
       });      

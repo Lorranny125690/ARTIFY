@@ -1,9 +1,16 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, Image, ScrollView, ActivityIndicator } from "react-native";
+import React, { useCallback, useState } from "react";
+import {
+  View,
+  Text,
+  Image,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
 import tw from "twrnc";
 import type { ImageType } from "../../contexts/ImageContext/imageContext";
 import Axios from "../../scripts/axios";
 import { useAuth } from "../../contexts/AuthContext/authenticatedUser";
+import { useFocusEffect } from "@react-navigation/native";
 
 export function LastProcess() {
   const { authState } = useAuth();
@@ -13,40 +20,50 @@ export function LastProcess() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchLastProcess = async () => {
-      console.log("Executando fetchLastProcess");
-  
-      try {
-        const response = await Axios.get("/processes/recent", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-  
-        console.log("Resposta recebida:", response.data);
-  
-        if (Array.isArray(response.data.images)) {
-          setImages(response.data.images);
-        } else {
-          throw new Error("Formato inesperado na resposta.");
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+
+      const fetchLastProcess = async () => {
+        setLoading(true);
+        setError(null);
+
+        try {
+          const response = await Axios.get("/processes/recent", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          if (isActive) {
+            if (Array.isArray(response.data.images)) {
+              setImages(response.data.images);
+            } else {
+              throw new Error("Formato inesperado na resposta.");
+            }
+          }
+        } catch (err: any) {
+          console.log("Erro:", err?.response ?? err);
+          if (err.response?.status === 404) {
+            setError("Usuário não encontrado.");
+          } else {
+            setError("Erro ao buscar o último processamento.");
+          }
+        } finally {
+          if (isActive) setLoading(false);
         }
-      } catch (err: any) {
-        console.log("Erro:", err?.response ?? err);
-        if (err.response?.status === 404) {
-          setError("Usuário não encontrado.");
-        } else {
-          setError("Erro ao buscar o último processamento.");
-        }
-      } finally {
+      };
+
+      if (token) {
+        fetchLastProcess();
+      } else {
+        console.log("Token não disponível ainda");
         setLoading(false);
       }
-    };
-  
-    if (token) {
-      fetchLastProcess();
-    } else {
-      console.log("Token não disponível ainda");
-    }
-  }, [token]);  
+
+      return () => {
+        isActive = false;
+      };
+    }, [token])
+  );
 
   if (loading) {
     return (
@@ -80,7 +97,9 @@ export function LastProcess() {
               resizeMode="cover"
             />
             <Text style={tw`text-slate-200 font-semibold`}>{img.filename}</Text>
-            <Text style={tw`text-slate-400 text-sm`}>{img.dataFormatada}</Text>
+            <Text style={tw`text-slate-400 text-sm`}>
+              {img.dataFormatada}
+            </Text>
           </View>
         ))
       ) : (
